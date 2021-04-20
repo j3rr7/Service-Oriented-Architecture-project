@@ -1,8 +1,11 @@
+const path = require('path');
 /**
  * Express Module
  */
 const express = require('express');
+const favicon = require('serve-favicon')
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 /**
  * Discord.js Module
@@ -71,15 +74,27 @@ client.on('message', (message) => {
 
         console.timeEnd('ping function');
     }
-})
 
+    if (message.content === ".destroy"){
+
+    }
+})
 
 /**
  * @ BEGIN EXPRESS FUNCTION
  */
-app.listen(3000, () => {
-    console.log('Application Started');
+app
+    .use(express.static(path.join(__dirname, 'public')))
 
-    // Start discord client here
-    client.login(config.BOT_TOKEN);
-});
+    .use(favicon(path.join(__dirname,'/public/favicon.png')))
+    .set('views',path.join(__dirname,'views'))
+    .set('view engine', 'ejs')
+
+    .get('/', (req, res) => res.render('pages/index'))
+
+    .listen(PORT, () => {
+        console.log(`Listening on port ${PORT}`);
+        // Start discord client here
+        //client.login(config.BOT_TOKEN);
+        //client.destroy();
+    });

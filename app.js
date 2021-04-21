@@ -74,10 +74,6 @@ client.on('message', (message) => {
 
         console.timeEnd('ping function');
     }
-
-    if (message.content === ".destroy"){
-
-    }
 })
 
 /**
@@ -90,7 +86,7 @@ app
     .set('views',path.join(__dirname,'views'))
     .set('view engine', 'ejs')
 
-    .get('/', (req, res) => res.render('pages/index'))
+    .get('/', (req, res) => res.render('pages/index', { data : null }))
 
     .listen(PORT, () => {
         console.log(`Listening on port ${PORT}`);

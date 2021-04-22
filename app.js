@@ -3,8 +3,10 @@ const path = require('path');
  * Express Module
  */
 const express = require('express');
-const favicon = require('serve-favicon')
+const bodyParser = require('body-parser');
+const favicon = require('serve-favicon');
 const app = express();
+
 const PORT = process.env.PORT || 5000;
 
 /**
@@ -21,6 +23,8 @@ const config = require('./config');
 /**
  * Some Extra Variable to help / UTILS
  */
+const api = require('./api');
+
 let SetActivityTimer;
 // Set Activity as described but loop it forever
 let funcSetActivityTimer = () => {
@@ -63,14 +67,16 @@ client.on('message', (message) => {
     if (!message.guild) return;
 
     // Catch all message with ping
-    if (message.content === "ping") {
+    if (message.content === ".ping") {
         // Using console.time() to get specific time
         // to run a function for internal debugging purposes
         console.time('ping function');
 
         // Send Pong with timestamp difference for ping purposes
         const timeTaken = Date.now() - message.createdTimestamp;
-        message.channel.send(`Pong! , latency : ${timeTaken}ms`)
+        message.channel.send(`Pong! , latency : ${timeTaken}ms`);
+        console.log(message.author);
+        message.channel.send(`User : ${ message.author }`);
 
         console.timeEnd('ping function');
     }
@@ -80,6 +86,8 @@ client.on('message', (message) => {
  * @ BEGIN EXPRESS FUNCTION
  */
 app
+    .use(bodyParser.urlencoded({ extended: true }))
+    .use(bodyParser.json())
     .use(express.static(path.join(__dirname, 'public')))
 
     .use(favicon(path.join(__dirname,'/public/favicon.png')))
@@ -87,10 +95,11 @@ app
     .set('view engine', 'ejs')
 
     .get('/', (req, res) => res.render('pages/index', { data : null }))
+    .use('/api/', api)
 
     .listen(PORT, () => {
         console.log(`Listening on port ${PORT}`);
         // Start discord client here
-        //client.login(config.BOT_TOKEN);
+        client.login(config.BOT_TOKEN);
         //client.destroy();
     });

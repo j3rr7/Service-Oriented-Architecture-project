@@ -100,6 +100,6 @@ app
     .listen(PORT, () => {
         console.log(`Listening on port ${PORT}`);
         // Start discord client here
-        client.login(config.BOT_TOKEN);
+        //client.login(config.BOT_TOKEN);
         //client.destroy();
     });

@@ -70,17 +70,76 @@
 <script>
 
     function SignUp(){
-        console.log("signUp");
+        let uName   = $("#sigName").val().toString();
+        let mail    = $("#sigEmail").val().toString();
+        let pass    = $("#sigPass").val().toString();
+
+        if (mail !== "" && pass !== "" && uName !== ""){
+            $.ajax({
+                url: '/api/signup',
+                type: 'POST',
+                cache: false,
+                data : JSON.stringify({ username : uName, email : mail, password : pass }),
+                contentType: "application/json; charset=utf-8",
+                success : function( data ) {
+                    iziToast.success({
+                        position: 'topLeft',
+                        title: 'Ok',
+                        message: data.message,
+                    });
+                    $("#sigName").val('');$("#sigEmail").val('');$("#sigPass").val('');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    iziToast.error({
+                        position: 'topLeft',
+                        title: 'Error',
+                        message: xhr.responseJSON.message,
+                    });
+                }
+            });
+        } else {
+            iziToast.warning({
+                position: 'topLeft',
+                title: 'Warning',
+                message: 'Please complete form before submitting',
+            });
+        }
     }
 
     function SignIn(){
-        console.log("signIn");
+        let mail = $("#logMail").val().toString();
+        let pass = $("#logPass").val().toString();
 
-        iziToast.success({
-            title: 'OK',
-            message: 'Login Success!',
-        });
+        if (mail !== "" && pass !== "") {
+            $.ajax({
+                url: '/api/signin',
+                type: 'POST',
+                cache: false,
+                data : JSON.stringify({ email : mail, password : pass }),
+                contentType: "application/json; charset=utf-8",
+                success : function( data ) {
+                    iziToast.success({
+                        position: 'topLeft',
+                        title: 'OK',
+                        message: 'Login Success!',
+                    });
+                    $("#logMail").val('');$("#logPass").val('');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    iziToast.error({
+                        position: 'topLeft',
+                        title: 'Error ' + xhr.status,
+                        message: xhr.responseJSON.message,
+                    });
+                }
+            });
+        } else {
+            iziToast.warning({
+                position: 'topLeft',
+                title: 'Warning',
+                message: 'Please complete form before submitting',
+            });
+        }
     }
-
 </script>
 </html>

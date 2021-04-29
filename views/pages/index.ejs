@@ -31,7 +31,7 @@
                                                 <input type="password" name="logPass" class="form-style" placeholder="Your Password" id="logPass" autocomplete="off">
                                                 <i class="input-icon uil uil-lock-alt"></i>
                                             </div>
-                                            <a href="javascript:SignIn()" class="btn mt-4" id="LogbtnSubmit">submit</a>
+                                            <a href="javascript:void(0)" class="btn mt-4" id="LogbtnSubmit">submit</a>
                                             <!--/form-->
                                             <!--p class="mb-0 mt-4 text-center"><a href="#0" class="link">Forgot your password?</a></p-->
                                         </div>
@@ -54,7 +54,7 @@
                                                 <input type="password" name="sigPass" class="form-style" placeholder="Your Password" id="sigPass" autocomplete="off">
                                                 <i class="input-icon uil uil-lock-alt"></i>
                                             </div>
-                                            <a href="javascript:SignUp()" class="btn mt-4">submit</a>
+                                            <a href="javascript:void(0)" class="btn mt-4" id="SignbtnSubmit">submit</a>
                                             <!--/form-->
                                         </div>
                                     </div>
@@ -68,6 +68,14 @@
     </div>
 </body>
 <script>
+
+    $("#LogbtnSubmit").on('click', () => {
+        SignIn();
+    })
+
+    $("#SignbtnSubmit").on('click', () => {
+        SignUp();
+    })
 
     function SignUp(){
         let uName   = $("#sigName").val().toString();
@@ -121,7 +129,13 @@
                     iziToast.success({
                         position: 'topLeft',
                         title: 'OK',
-                        message: 'Login Success!',
+                        message: 'Login Success!\nWelcome back ' + data.data,
+                        timeout: 1500,
+                        pauseOnHover: false,
+                        resetOnHover: false,
+                        onClosing: function(){
+                            document.location.href = '/users' // redirect to /users (workaround)
+                        }
                     });
                     $("#logMail").val('');$("#logPass").val('');
                 },

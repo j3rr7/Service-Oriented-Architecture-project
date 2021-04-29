@@ -1,16 +1,15 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const router = express.Router();
 
 const db = require('./database');
 
-// Home page route.
-router.get('/', function (req, res) {
+// Home page api route.
+router.get('/', (req, res) => {
     res.status(403).send('API HOME PAGE');
 })
 
-// About page route.
-router.get('/about', function (req, res) {
+// About page api route.
+router.get('/about',  (req, res) => {
     res.status(403).send('API ABOUT PAGE');
 })
 
@@ -84,13 +83,17 @@ router.post('/signin', async (req, res) => {
         return res.status(404).json({ status : 404 , message: "User Not Found" });
     }
 
+    await db.release(connection);
+
     // ToDo Add Hashing
     if (query_user[0].password === password) {
-
+        req.session.currentUser = {
+            data : query_user[0]
+        };
+        return res.status(200).json({ status : 200 , message: "User Logged in", data : query_user[0].username });
     }
 
-    await db.release(connection);
-    return res.status(200).json({ status : 200 , message: "User Logged in", data : query_user[0].username });
+    return res.status(400).json({ status : 400 , message: "Wrong Password"});
 })
 
 module.exports = router;

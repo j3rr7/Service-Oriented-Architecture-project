@@ -96,4 +96,13 @@ router.post('/signin', async (req, res) => {
     return res.status(400).json({ status : 400 , message: "Wrong Password"});
 })
 
+// SIGN OUT
+router.post('/signout', async (req, res) => {
+    if (req.session.currentUser) {
+        req.session.destroy();
+        return res.status(200).json({ status : 200 , message: "User Logged Out"});
+    }
+    return res.status(400).json({ status : 400 , message: "User not signed in"});
+})
+
 module.exports = router;

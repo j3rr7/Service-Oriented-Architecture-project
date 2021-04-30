@@ -30,7 +30,7 @@ const user = require('./user');
  * @ BEGIN EXPRESS FUNCTION
  */
 app
-    .use(session({ secret: config.App_ID || process.env.App_ID, resave: false, saveUninitialized: true, cookie: { maxAge: 1000 * 60 } }))
+    .use(session({ secret: config.App_ID || process.env.App_ID, resave: false, saveUninitialized: true, cookie: { maxAge: 1000 * 60 * 60 } }))
     .use(bodyParser.urlencoded({ extended: true }))
     .use(bodyParser.json())
     .use(express.static(path.join(__dirname, 'public')))

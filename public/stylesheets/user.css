@@ -190,3 +190,105 @@ a {
     -o-transform: translateX(0) !important;
     transition-delay: 1s;
 }
+
+/* Pricing section */
+
+.pricing {
+    position: relative;
+    width: auto;
+    margin: 0 -100%;
+    font-size: 0;
+    opacity: 1;
+    transition: opacity .2s ease;
+}
+
+.price-option {
+    display: inline-block;
+    width: 15.00em;
+    vertical-align: middle;
+    margin-right: 0.3125em;
+    font-size: 16px;
+    opacity: 1;
+    transition: opacity .2s ease;
+}
+
+.price-option:last-child { margin-right: 0; }
+.pricing:hover .price-option { opacity: 0.6; }
+.pricing:hover .price-option:hover { opacity: 1; }
+
+.option-detail {
+    padding: 2em 0;
+    background: white;
+    text-align: center;
+}
+
+.price-option.low .option-detail  { border-radius: .25em 0 0 0; }
+.price-option.mid .option-detail  { padding: 2.3em 0; border-radius: .25em .25em 0 0; }
+.price-option.high .option-detail { border-radius: 0 .25em 0 0; }
+
+.plan-cost,
+.user-type {
+    display: block;
+}
+
+.plan-cost {
+    font-size: 1.5em;
+    color: #383838;
+}
+
+.user-type {
+    font-size: .7em;
+    text-transform: uppercase;
+    color: #909090;
+}
+
+.purchase-plan {
+    position: relative;
+    display: block;
+    padding: .6em;
+    font-size: .875em;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(0,0,0,0.6);
+}
+
+.price-option.low .purchase-plan  { background: #a7d155; border-radius: 0 0 0 .25em; text-decoration: none; }
+.price-option.mid .purchase-plan  { background: #eada42; border-radius: 0 0 .25em .25em; text-decoration: none; }
+.price-option.high .purchase-plan { background: #e54e4b; border-radius: 0 0 .25em 0; text-decoration: none;  }
+
+.purchase-plan:before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    display: block;
+    width: 0;
+    height: 0;
+    margin-left: -5px;
+    border-width: 0 5px 5px;
+    border-style: solid;
+}
+
+.price-option.low .purchase-plan:before  { border-color: transparent transparent #a7d155; }
+.price-option.mid .purchase-plan:before  { border-color: transparent transparent #eada42; }
+.price-option.high .purchase-plan:before { border-color: transparent transparent #e54e4b; }
+
+@media screen and (max-width : 860px) {
+    .pricing {
+        width: 480px;
+        margin: -50% 5%;
+    }
+    .price-option {
+        display: block;
+        padding: 10px;
+    }
+    .shop-title {
+        margin-top: -90%;
+        margin-bottom: 50%;
+    }
+    .page {
+        overflow: scroll;
+    }
+}

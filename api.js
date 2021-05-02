@@ -88,7 +88,13 @@ router.post('/signin', async (req, res) => {
     // ToDo Add Hashing
     if (query_user[0].password === password) {
         req.session.currentUser = {
-            data : query_user[0]
+            data : {
+                username    : query_user[0].username,
+                email       : query_user[0].email,
+                type        : query_user[0].type,
+                lastActive  : query_user[0].lastActive,
+                isBanned    : query_user[0].isbanned,
+            }
         };
         return res.status(200).json({ status : 200 , message: "User Logged in", data : query_user[0].username });
     }

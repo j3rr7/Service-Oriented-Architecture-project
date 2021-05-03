@@ -14,11 +14,13 @@
                         <a href="#t1"><li class="icon fad fa-house" id="uno"></li></a>
                         <a href="#t2"><li class="icon fad fa-shopping-cart" id="dos"></li></a>
                         <a href="#t3"><li class="icon fad fa-user-alt" id="tres"></li></a>
-                        <% if ( user.type >= 1 ) { %>
+                        <% if ( user.type >= 0 ) { %>
                             <!--a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a-->
                             <a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a>
                         <% } %>
-                        <!--a href="#t5"><li class="icon fa fa-plus-circle" id="cinco"></li></a-->
+                        <% if ( user.type >= 2 ) {%>
+                            <a href="#t5"><li class="icon fad fa-heart" id="cinco"></li></a>
+                        <% } %>
                         <a href="javascript:void(0)" onclick="SignOut()"><li class="icon fad fa-sign-out-alt"></li></a>
                     </ul>
                     <div class="page" id="p1">
@@ -29,13 +31,15 @@
                         </section>
                     </div>
                     <div class="page" id="p2">
-                        <section class="icon">
+                        <section class="icon" style="top: -50%">
                             <div class="title shop-title">Tier Upgrade</div>
                             <div class="pricing">
                                 <div class="price-option low">
                                     <div class="option-detail">
-                                        <span class="plan-cost">$0</span>
-                                        <span class="user-type">Free</span>
+                                        <span class="plan-cost">Free</span>
+                                        <span class="user-type line-trough">$0</span>
+                                        <!--span class="plan-cost">$0</span>
+                                        <span class="user-type">Free</span-->
                                         <hr>
                                         <span class="user-type">
                                             <span><i class="fad fa-check" style="color: limegreen"></i></span>
@@ -43,27 +47,21 @@
                                         </span>
                                         <span class="user-type">
                                             <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Train/Battle/Catch Pokemon
+                                            Battle Pokemon
                                         </span>
                                         <span class="user-type">
                                             <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Max 10 Pokeballs
-                                        </span>
-                                        <span class="user-type">
-                                            <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Catch Up to 10 Pokemon
-                                        </span>
-                                        <span class="user-type">
-                                            <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Weekly benefit
+                                            Battle History Pokemon
                                         </span>
                                     </div>
                                     <a href="javascript:void(0)" class="purchase-plan"><i class="fad fa-badge-check" style="color: #7c43bd;font-size: 15px"></i></a>
                                 </div>
                                 <div class="price-option mid">
                                     <div class="option-detail">
-                                        <span class="plan-cost">$10</span>
-                                        <span class="user-type">Premium</span>
+                                        <!--span class="plan-cost">$10/month</span>
+                                        <span class="user-type">Premium</span-->
+                                        <span class="plan-cost">Premium</span>
+                                        <span class="user-type">$10/month</span>
                                         <hr>
                                         <span class="user-type">
                                             <span><i class="fad fa-shield-check" style="color: limegreen"></i></span>
@@ -71,11 +69,7 @@
                                         </span>
                                         <span class="user-type">
                                             <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Max 50 Pokeballs
-                                        </span>
-                                        <span class="user-type">
-                                            <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Catch Unlimited Pokemon
+                                            Custom Pokemon
                                         </span>
                                         <span class="user-type">
                                             <span><i class="fad fa-check" style="color: limegreen"></i></span>
@@ -83,7 +77,7 @@
                                         </span>
                                         <span class="user-type">
                                             <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Pokedex
+                                            Complete Docs
                                         </span>
                                     </div>
                                     <% if ( user.type >= 1 ) { %>
@@ -94,8 +88,10 @@
                                 </div>
                                 <div class="price-option high">
                                     <div class="option-detail">
-                                        <span class="plan-cost">$50</span>
-                                        <span class="user-type">Supporter</span>
+                                        <!--span class="plan-cost">$50/month</span>
+                                        <span class="user-type">Supporter</span-->
+                                        <span class="plan-cost">Supporter</span>
+                                        <span class="user-type">$50/month</span>
                                         <hr>
                                         <span class="user-type">
                                             <span><i class="fad fa-shield-check" style="color: limegreen"></i></span>
@@ -103,11 +99,7 @@
                                         </span>
                                         <span class="user-type">
                                             <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Special Discord Role
-                                        </span>
-                                        <span class="user-type">
-                                            <span><i class="fad fa-check" style="color: limegreen"></i></span>
-                                            Special custom channel
+                                            Custom Pokemon for Supporter only
                                         </span>
                                         <span class="user-type">
                                             <span><i class="fad fa-heart" style="color:red"></i></span>
@@ -135,14 +127,14 @@
                         </section>
                     </div>
                     <!-- Created by https://dribbble.com/albertohartzet & http://www.dribbble.com/mrpeters -->
-                    <% if ( user.type >= 1 ) { %>
+                    <% if ( user.type >= 0 ) { %>
                         <div class="page" id="p4">
-                            <section class="icon fa fa-dribbble">
-                                <span class="title">Pokedex</span>
+                            <section class="icon fad">
+                                <span class="title">API DOCS</span>
                                 <p class="hint">
-                                    <span class="hint line-trough">something missing here</span>
+                                    <span class="hint">API documentation</span>
                                 </p>
-                                <p class="hint">ToDo </p>
+                                <p class="hint"><a href="#">Click Here</a></p>
                             </section>
                         </div>
                         <!--div class="page" id="p4">
@@ -155,15 +147,18 @@
                             </section>
                         </div-->
                     <% } %>
-                    <!--div class="page" id="p5">
-                        <section class="icon fa fa-plus-circle">
-                            <span class="title">More</span>
-                            <p class="hint">
-                                <span>You love one page & CSS only stuff? </span><br/>
-                                <a href="#" target="_blank">check this pen "Pure CSS One page vertical navigation"</a>
-                            </p>
-                        </section>
-                    </div-->
+                    <% if ( user.type >= 2 ) { %>
+                        <div class="page" id="p5">
+                            <section class="icon fad">
+                                <i class="fad fa-heart-circle" style="color: hotpink"></i>
+                                <span class="title">Claim Reward</span>
+                                <p class="hint">
+                                    <span>Here is your reward</span><br/>
+                                    <a href="#" target="_blank">Click Here</a>
+                                </p>
+                            </section>
+                        </div>
+                    <% } %>
                 </div>
             </div>
         </div>

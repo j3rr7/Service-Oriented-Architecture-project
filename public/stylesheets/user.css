@@ -319,5 +319,6 @@ input.form-control {
 .rounded {
     width: 100px;
     height: auto;
+    background-color: greenyellow;
     border-radius: 50%;
 }

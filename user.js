@@ -18,7 +18,7 @@ router.get('/',  async (req, res) => {
          */
 
         if ( req.session.currentUser.data.type === -1 ) {
-            
+
             res.render("pages/admin-page", { user : req.session.currentUser.data })
 
         } else {

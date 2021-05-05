@@ -11,7 +11,7 @@ router.get('/users',async  (req, res) => {
 
     conn = await db.connection()
     query = await db.executeQuery(conn,`select * from users`)
-    db.release();
+    await db.release();
     res.status(200).send(query)
 
 

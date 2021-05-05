@@ -21,10 +21,21 @@ router.put('/ban',async(req,res)=>{
     let id = req.body.id
     if(id){
         conn = await  db.connection()
-        query = await db.executeQuery(conn,`select * from users`)
-        res.status(200).send("success ban")
+        query = await db.executeQuery(conn,`select * from users where id ='${id}' `)
+        let user = query[0];
+        if(user == null){
+            return res.status(404).send("user tidak ditemukan");
+        }else if (user.isbanned == 1){
+            return res.status(400).send("user sudah di ban")
+        }
+
+        query = await db.executeQuery(conn,`update users set isbanned = 1 where id = ${id}`)
+        res.status(200).json({
+            nama : user.username,
+            email : user.email
+        })
     }
-    res.status(400).send("bad request")
+    res.status(400).send("id tidka ditemukan")
 })
 
 

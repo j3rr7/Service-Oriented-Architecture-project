@@ -122,8 +122,15 @@
                     </div>
                     <div class="page" id="p3">
                         <section class="icon">
-                            <i class="fad fa-user"></i>
+                            <% if (user.type < 1) { %>
+                                <i class="fad fa-user"></i>
+                            <% } else { %>
+                                <div class="user-img">
+                                    <img class="rounded" src="/uploads/1.jpg" alt="Avatar">
+                                </div>
+                            <% } %>
                             <span class="title">USER</span>
+                            <span class="hint">Your ApiKey : <input class="form-control" readonly type="text" value=<%= user.apiKey %>></span>
                         </section>
                     </div>
                     <!-- Created by https://dribbble.com/albertohartzet & http://www.dribbble.com/mrpeters -->

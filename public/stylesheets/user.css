@@ -316,10 +316,8 @@ input.form-control {
 }
 
 /* USER SECTION */
-.user-img img.rounded {
-    object-fit: cover;
-    border-radius: 50%;
-    background-color: greenyellow;
-    height: 100px;
+.rounded {
     width: 100px;
+    height: auto;
+    border-radius: 50%;
 }

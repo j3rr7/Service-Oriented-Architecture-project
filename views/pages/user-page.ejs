@@ -125,11 +125,19 @@
                             <% if (user.type < 1) { %>
                                 <i class="fad fa-user"></i>
                             <% } else { %>
-                                <div class="user-img">
-                                    <img class="rounded" src="/uploads/1.jpg" alt="Avatar">
-                                </div>
+
+                                <!-- ToDo Set primary & secondary image -->
+                                    <% if ( !user.picture ) { %>
+                                        <i class="fad fa-user"></i>
+                                    <% } else { %>
+                                        <div class="user-img">
+                                            <img class="rounded" src=<%= "/uploads/" + user.picture %> alt="">
+                                        </div>
+                                    <% } %>
+
                             <% } %>
-                            <span class="title">USER</span>
+                            <span class="title"><%= user.username %></span>
+                            <span class="hint"><button class="btn btn-primary" style="margin-bottom: 10px">Change Profile</button></span>
                             <span class="hint">Your ApiKey : <input class="form-control" readonly type="text" value=<%= user.apiKey %>></span>
                         </section>
                     </div>

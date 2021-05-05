@@ -102,13 +102,13 @@ router.post('/signin', async (req, res) => {
         req.session.currentUser = {
             data : {
                 id          : query_user[0].id,
-                /* We Dont need this probably
                 username    : query_user[0].username,
                 email       : query_user[0].email,
                 type        : query_user[0].type,
+                apiKey      : query_user[0].apiKey,
                 lastActive  : query_user[0].lastActive,
                 isBanned    : query_user[0].isbanned,
-                */
+                picture     : query_user[0].picture,
             }
         };
         return res.status(200).json({ status : 200 , message: "User Logged in", data : query_user[0].username });
@@ -131,6 +131,54 @@ router.post('/signout', async (req, res) => {
 // GET POKEMON
 router.get('/pokemon', (req, res) => {
 
+})
+
+
+
+
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: function(req,file,callback){
+        callback(null,'./public/uploads');
+    },
+    filename: function(req,file,callback){
+        const extension = file.originalname.split('.')[file.originalname.split('.').length-1];
+        const filename = req.session.currentUser.data.id;
+        callback(null,(filename+'.'+extension));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    fileFilter: function (req, file, callback) {
+        let fileext = file.originalname.split('.')[file.originalname.split('.').length-1];
+        if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
+            callback(null, true);
+        } else {
+            //callback(null, false);
+            return callback(new Error('Upload Failed'));
+        }
+    }
+});
+
+//TEST MULTER
+router.post('/profile/upload', (req, res) => {
+    if (!req.session.currentUser) {
+        return res.status(403).send('Forbidden, Session not found');
+    }
+    upload.single('picture')(req, res, async (err) => {
+        if (err) {
+            return res.status(400).send({
+                status : res.statusCode,
+                message : err.message
+            })
+        }
+
+        return res.status(200).send({
+            status : res.statusCode,
+            message : "Upload Success"
+        })
+    })
 })
 
 module.exports = router;

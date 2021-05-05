@@ -3,6 +3,18 @@ const router = express.Router();
 
 const db = require('./database');
 
+// ToDo : Seperate File for utils function (- maybe not needed)
+function GenerateApiKey( length ) {
+    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    return Array.apply(0, Array(length)).map(function() {
+        return (
+            function(charset){
+                return charset.charAt(Math.floor(Math.random() * charset.length))
+            }(characters)
+        );
+    }).join('');
+}
+
 // Home page api route.
 router.get('/', (req, res) => {
     res.status(403).send('API HOME PAGE');
@@ -51,8 +63,8 @@ router.post('/signup', async (req, res) => {
         if (validateEmail(email)) {
             // ToDo Add Hashing
             let query_insert = await db.executeQuery(connection,
-                `INSERT INTO users(username,password,email) VALUES(:username,:password,:email)`,
-                { username : username, password : password, email : email })
+                `INSERT INTO users(username,password,email,apiKey) VALUES(:username,:password,:email,:apiKey)`,
+                { username : username, password : password, email : email, apiKey: GenerateApiKey(32) })
 
             return res.status(201).json({ status : 201, message : "User registered" });
         } else {
@@ -88,12 +100,37 @@ router.post('/signin', async (req, res) => {
     // ToDo Add Hashing
     if (query_user[0].password === password) {
         req.session.currentUser = {
-            data : query_user[0]
+            data : {
+                id          : query_user[0].id,
+                /* We Dont need this probably
+                username    : query_user[0].username,
+                email       : query_user[0].email,
+                type        : query_user[0].type,
+                lastActive  : query_user[0].lastActive,
+                isBanned    : query_user[0].isbanned,
+                */
+            }
         };
         return res.status(200).json({ status : 200 , message: "User Logged in", data : query_user[0].username });
     }
 
     return res.status(400).json({ status : 400 , message: "Wrong Password"});
+})
+
+// SIGN OUT
+router.post('/signout', async (req, res) => {
+    if (req.session.currentUser) {
+        req.session.destroy();
+        return res.status(200).json({ status : 200 , message: "User Logged Out"});
+    }
+    return res.status(400).json({ status : 400 , message: "User not signed in"});
+})
+
+// MIDDLEWARE GET USER API KEY
+
+// GET POKEMON
+router.get('/pokemon', (req, res) => {
+
 })
 
 module.exports = router;

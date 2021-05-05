@@ -136,6 +136,10 @@ router.get('/pokemon', (req, res) => {
 
 
 
+/*
+    MULTER SECTION
+ */
+
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: function(req,file,callback){
@@ -161,24 +165,43 @@ const upload = multer({
     }
 });
 
-//TEST MULTER
 router.post('/profile/upload', (req, res) => {
     if (!req.session.currentUser) {
         return res.status(403).send('Forbidden, Session not found');
     }
-    upload.single('picture')(req, res, async (err) => {
-        if (err) {
-            return res.status(400).send({
-                status : res.statusCode,
-                message : err.message
-            })
-        }
 
-        return res.status(200).send({
-            status : res.statusCode,
-            message : "Upload Success"
+    let USER = req.session.currentUser.data
+
+    // if user not free
+    if (USER.type > 0) {
+
+        upload.single('picture')(req, res, async (err) => {
+            if (err) {
+                return res.status(400).send({
+                    status : res.statusCode,
+                    message : err.message
+                })
+            }
+
+            //ToDo Add update
+            let connection = await db.connection()
+            let query_update = await db.executeQuery(connection,
+                `UPDATE users SET users.picture = :pic WHERE users.id = :id`,
+                {
+                    pic : req.file.filename,
+                    id : USER.id
+                }
+            )
+
+            return res.status(200).send({
+                status : res.statusCode,
+                message : "Upload Success"
+            })
         })
-    })
+
+    } else {
+        return res.status(401).send('Subscription not found');
+    }
 })
 
 module.exports = router;

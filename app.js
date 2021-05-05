@@ -25,6 +25,7 @@ const config = require('./config');
  */
 const api = require('./api');
 const user = require('./user');
+const admin = require('./admin');
 
 /**
  * @ BEGIN EXPRESS FUNCTION
@@ -45,6 +46,7 @@ app
     })
     .use('/api/', api)
     .use('/users/', user)
+    .use('/admin/',admin)
 
     .listen(PORT, () => {
         console.log(`Listening on port ${PORT}`);

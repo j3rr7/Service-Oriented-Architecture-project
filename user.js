@@ -34,4 +34,8 @@ router.get('/',  async (req, res) => {
     }
 })
 
+router.get('/update', async (req,res) => {
+    
+})
+
 module.exports = router

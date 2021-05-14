@@ -16,10 +16,11 @@
                         <a href="#t3"><li class="icon fad fa-user-alt" id="tres"></li></a>
                         <% if ( user.type >= 0 ) { %>
                             <!--a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a-->
-                            <a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a>
+                            <a href="#t4"><li class="icon fad fa-edit" id="cuatro"></li></a>
+                            <a href="#t5"><li class="icon fad fa-book" id="cinco"></li></a>
                         <% } %>
                         <% if ( user.type >= 2 ) {%>
-                            <a href="#t5"><li class="icon fad fa-heart" id="cinco"></li></a>
+                            <a href="#t6"><li class="icon fad fa-heart" id="seis"></li></a>
                         <% } %>
                         <a href="javascript:void(0)" onclick="SignOut()"><li class="icon fad fa-sign-out-alt"></li></a>
                     </ul>
@@ -137,13 +138,46 @@
 
                             <% } %>
                             <span class="title"><%= user.username %></span>
-                            <span class="hint"><a href="#"><button class="btn btn-primary" style="margin-bottom: 10px">Change Profile</button></a></span>
                             <span class="hint">Your ApiKey : <input class="form-control" readonly type="text" value=<%= user.apiKey %>></span>
+                        </section>
+                    </div>
+                    <div class="page" id="p4">
+                        <section class="icon">
+                            <div class="section text-center">
+                                <% if (user.type < 1) { %>
+                                    <i class="fad fa-user"></i>
+                                <% } else { %>
+    
+                                    <!-- ToDo Set primary & secondary image -->
+                                        <% if ( !user.picture ) { %>
+                                            <i class="fad fa-user"></i>
+                                        <% } else { %>
+                                            <div class="user-img">
+                                                <img class="rounded" src=<%= "/uploads/" + user.picture %> alt="">
+                                            </div>
+                                        <% } %>
+    
+                                <% } %>
+                                <h4 class="mb-4 pb-3">Change Profile</h4>
+                                <div class="form-group">
+                                    <i class="input-icon fad fa-user"></i>
+                                    <input type="text" name="updUsername" class="form-style" value="<%= user.username %>" id="updUsername" autocomplete="off">
+                                </div>
+                                <div class="form-group mt-2">
+                                    <i class="input-icon fad fa-at"></i>
+                                    <input type="text" name="updEmail" class="form-style" value="<%= user.email %>" id="updEmail" autocomplete="off">
+                                </div>
+                                <!-- <div class="form-group mt-2">
+                                    <input type="password" name="sigPass" class="form-style" placeholder="Your Password" id="sigPass" autocomplete="off">
+                                    <i class="input-icon fad fa-lock-alt"></i>
+                                </div> -->
+                                <a href="javascript:void(0)" class="btn mt-4" id="SignbtnSubmit">Update</a>
+                            </div>
                         </section>
                     </div>
                     <!-- Created by https://dribbble.com/albertohartzet & http://www.dribbble.com/mrpeters -->
                     <% if ( user.type >= 0 ) { %>
-                        <div class="page" id="p4">
+                        <div class="page" id="p5">
                             <section class="icon fad">
                                 <span class="title">API DOCS</span>
                                 <p class="hint">
@@ -163,7 +197,7 @@
                         </div-->
                     <% } %>
                     <% if ( user.type >= 2 ) { %>
-                        <div class="page" id="p5">
+                        <div class="page" id="p6">
                             <section class="icon fad">
                                 <i class="fad fa-heart-circle" style="color: hotpink"></i>
                                 <span class="title">Claim Reward</span>

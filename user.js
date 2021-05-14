@@ -34,8 +34,52 @@ router.get('/',  async (req, res) => {
     }
 })
 
-router.get('/update', async (req,res) => {
+router.post('/updateProfile', async (req,res) => {
+    let username    = req.body.username;
+    let email       = req.body.email;
     
+    let connection = await db.connection();
+
+    let query_username = await db.executeQuery(connection,
+        `SELECT COUNT(*) AS count FROM users WHERE username = :username`, { username : username });
+
+    if (query_username[0].count > 0) {
+        await db.release(connection);
+        return res.status(400).json({ status : 400, message : "Username is already registered use another" });
+    }
+
+    let query_email = await db.executeQuery(connection,
+        `SELECT COUNT(*) AS count FROM users WHERE email = :email`, { email : email });
+
+    if (query_email[0].count > 0) {
+        await db.release(connection);
+        return res.status(400).json({ status : 400, message : "Email is already registered please use another email" });
+    }
+
+    let validateEmail = (email) => {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    try {
+
+        if (validateEmail(email)) {
+            // ToDo Add Hashing
+            let query_insert = await db.executeQuery(connection,
+                `INSERT INTO users(username,password,email,apiKey) VALUES(:username,:password,:email,:apiKey)`,
+                { username : username, password : password, email : email, apiKey: GenerateApiKey(32) })
+
+            return res.status(201).json({ status : 201, message : "User registered" });
+        } else {
+            return res.status(400).json({ status : 400, message : "Email format is wrong" });
+        }
+
+    } catch (err) {
+        return res.status(400).json({ status : 400, message : "Something Wrong" });
+    }
+    finally {
+        await db.release(connection);
+    }
 })
 
 module.exports = router

@@ -30,11 +30,7 @@ router.post('/signup', async (req, res) => {
     let username    = req.body.username;
     let email       = req.body.email;
     let password    = req.body.password;
-
-    if (!username.toString().includes("#")) {
-        return res.status(400).json({ status : 400, message : "Please include tag ex. JereID#2525" });
-    }
-
+    
     let connection = await db.connection();
 
     let query_username = await db.executeQuery(connection,

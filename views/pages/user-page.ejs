@@ -158,7 +158,7 @@
                                         <% } %>
     
                                 <% } %>
-                                <h4 class="mb-4 pb-3">Change Profile</h4>
+                                <h4 class="mb-4 pb-3" style="color: black;">Change Profile</h4>
                                 <div class="form-group">
                                     <i class="input-icon fad fa-user"></i>
                                     <input type="text" name="updUsername" class="form-style" value="<%= user.username %>" id="updUsername" autocomplete="off">
@@ -171,7 +171,7 @@
                                     <input type="password" name="sigPass" class="form-style" placeholder="Your Password" id="sigPass" autocomplete="off">
                                     <i class="input-icon fad fa-lock-alt"></i>
                                 </div> -->
-                                <a href="javascript:void(0)" class="btn mt-4" id="SignbtnSubmit">Update</a>
+                                <a href="javascript:void(0)" class="btn mt-4" id="UpdbtnSubmit">Update</a>
                             </div>
                         </section>
                     </div>
@@ -215,6 +215,46 @@
 </div>
 </body>
 <script>
+    $("#UpdbtnSubmit").on('click', () => {
+        Update();
+    })
+
+    function Update(){
+        let uName   = $("#updUsername").val().toString();
+        let mail    = $("#updEmail").val().toString();
+
+        if (mail !== "" && uName !== ""){
+            $.ajax({
+                url: '/user/updateProfile',
+                type: 'POST',
+                cache: false,
+                data : JSON.stringify({ username : uName, email : mail }),
+                contentType: "application/json; charset=utf-8",
+                success : function( data ) {
+                    iziToast.success({
+                        position: 'topLeft',
+                        title: 'Ok',
+                        message: data.message,
+                    });
+                    $("#sigName").val('');$("#sigEmail").val('');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    iziToast.error({
+                        position: 'topLeft',
+                        title: 'Error',
+                        message: xhr.responseJSON.message,
+                    });
+                }
+            });
+        } else {
+            iziToast.warning({
+                position: 'topLeft',
+                title: 'Warning',
+                message: 'Please complete form before submitting',
+            });
+        }
+    }
+
     function SignOut(){
         iziToast.question({
             timeout: 20000,

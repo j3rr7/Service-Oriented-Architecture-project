@@ -169,7 +169,25 @@ router.get('/pokemon', (req, res) => {
  */
 
 // start of battle, history battle will be recorded based on this
+// p1 and p2 is a json object
+// param = api_key : string , p1 : JSON.Object , p2 : JSON.Object
+// p1/p2 JSON.Object consist of minimum { name:"name of pokemon", HP: "starting health point" }
 router.post('/battle', Middleware_APIKEY_FETCH, async (req, res) => {
+
+})
+
+// param = battle_id, string : "p1"/"p2" , move_id <- from poke-api
+router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
+
+})
+
+// param = battle_id
+router.post('/battle/history', Middleware_APIKEY_FETCH, async (req, res) => {
+
+})
+
+// param = battle_id
+router.post('/battle/end', Middleware_APIKEY_FETCH, async (req, res) => {
 
 })
 

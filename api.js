@@ -257,17 +257,16 @@ router.post('/battle', Middleware_APIKEY_FETCH, async (req, res) => {
 
     }
 
-    let battle_id = generate_battle_id();
+    let battle_id = await generate_battle_id();
 
     let query_insert = await db.executeQuery(connection,
-        `INSERT INTO battle_session(battle_id, user_id, p1, p2) 
-                    VALUES (:battle_id, :user_id, '${ JSON.stringify(p1) }', '${ JSON.stringify(p2) }')`,
-        { battle_id : battle_id , user_id : USER_DATA.id});
+        `INSERT INTO battle_session(battle_id, user_id, p1, p2) VALUES ( :battle_id, :user_id, :p1, :p2 )`,
+        { battle_id : battle_id , user_id : USER_DATA.id, p1 : JSON.stringify(p1) , p2 : JSON.stringify(p2) });
 
     await db.release(connection);
     return res.status(200).send({
         battle_id : battle_id,
-        pokemon : [ p1, p2 ]
+        pokemon : { p1 : p1, p2 : p2 }
     });
 })
 
@@ -275,6 +274,15 @@ router.post('/battle', Middleware_APIKEY_FETCH, async (req, res) => {
 router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
     // storing user data for later
     let USER_DATA = req.USER_DATA;
+
+    let battle_id = req.body.battle_id;
+    if (!battle_id) {
+        return res.status(400).json({ status : res.statusCode , message: "Battle id not provided"});
+    }
+
+    //ToDo : ALL OF MEEEEE LOVE ALLLL OF YOUUUU ~ <3 - jere :'v PS: my code is stupid but easly debuggable -someone anonymous
+
+
 })
 
 // param = battle_id

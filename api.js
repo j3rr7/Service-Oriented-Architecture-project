@@ -57,7 +57,9 @@ router.get('/about',  (req, res) => {
 router.post('/signup', async (req, res) => {
     let username    = req.body.username;
     let email       = req.body.email;
+    let phone       = req.body.phone;
     let password    = req.body.password;
+    let isNumPhone = /^\d+$/.test(phone);
     let connection = await db.connection();
 
     let query_username = await db.executeQuery(connection,
@@ -83,15 +85,19 @@ router.post('/signup', async (req, res) => {
 
     try {
 
-        if (validateEmail(email)) {
+        if (validateEmail(email) && isNumPhone) {
             // ToDo Add Hashing
             let query_insert = await db.executeQuery(connection,
-                `INSERT INTO users(username,password,email,apiKey) VALUES(:username,:password,:email,:apiKey)`,
-                { username : username, password : password, email : email, apiKey: GenerateApiKey(32) })
+                `INSERT INTO users(username,password,email,phone,apiKey) VALUES(:username,:password,:email,:phone,:apiKey)`,
+                { username : username, password : password, email : email, phone : phone, apiKey: GenerateApiKey(32) })
 
             return res.status(201).json({ status : 201, message : "User registered" });
-        } else {
+        } else if( !validateEmail(email) && isNumPhone){
             return res.status(400).json({ status : 400, message : "Email format is wrong" });
+        } else if( validateEmail(email) && !isNumPhone){
+            return res.status(400).json({ status : 400, message : "Phone number format is wrong" });
+        } else if( !validateEmail(email) && !isNumPhone){
+            return res.status(400).json({ status : 400, message : "Email and Phone Number format is wrong" });
         }
 
     } catch (err) {
@@ -127,6 +133,7 @@ router.post('/signin', async (req, res) => {
                 id          : query_user[0].id,
                 username    : query_user[0].username,
                 email       : query_user[0].email,
+                phone       : query_user[0].phone,
                 type        : query_user[0].type,
                 apiKey      : query_user[0].apiKey,
                 lastActive  : query_user[0].lastActive,
@@ -200,6 +207,7 @@ router.post('/battle/end', Middleware_APIKEY_FETCH, async (req, res) => {
     MULTER SECTION
  */
 const multer = require('multer');
+const e = require('express');
 const storage = multer.diskStorage({
     destination: function(req,file,callback){
         callback(null,'./public/uploads');

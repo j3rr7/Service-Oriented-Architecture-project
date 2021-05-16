@@ -138,7 +138,7 @@
                                     <% } %>
 
                                 <% } %>
-                                <span class="title"><%= user.username %></span>
+                                <span class="title" id="username"><%= user.username %></span>
                                 <span class="hint">Your ApiKey : <input class="form-control" readonly type="text" value=<%= user.apiKey %>></span>
                             </section>
                         </div>
@@ -165,8 +165,9 @@
                                         <input type="text" name="updUsername" class="form-style" value="<%= user.username %>" id="updUsername" autocomplete="off">
                                     </div>
                                     <div class="form-group mt-2">
-                                        <i class="input-icon fad fa-at"></i>
-                                        <input type="text" name="updEmail" class="form-style" value="<%= user.email %>" id="updEmail" autocomplete="off">
+                                        <i class="input-icon fad fa-phone"></i>
+                                        <input type="text" name="updPhone" class="form-style" value="<%= user.phone %>" id="updPhone" autocomplete="off">
+                                        <input type="hidden" name="idUser" class="form-style" value="<%= user.id %>" id="idUser" autocomplete="off">
                                     </div>
                                     <!-- <div class="form-group mt-2">
                                         <input type="password" name="sigPass" class="form-style" placeholder="Your Password" id="sigPass" autocomplete="off">
@@ -223,14 +224,15 @@
 
     function Update(){
         let uName   = $("#updUsername").val().toString();
-        let mail    = $("#updEmail").val().toString();
+        let hp    = $("#updPhone").val().toString();
+        let id    = $("#idUser").val().toString();
 
-        if (mail !== "" && uName !== ""){
+        if (hp !== "" && uName !== ""){
             $.ajax({
-                url: '/user/updateProfile',
+                url: '/users/updateProfile',
                 type: 'POST',
                 cache: false,
-                data : JSON.stringify({ username : uName, email : mail }),
+                data : JSON.stringify({ username : uName, userId : id, phone :hp }),
                 contentType: "application/json; charset=utf-8",
                 success : function( data ) {
                     iziToast.success({
@@ -238,7 +240,8 @@
                         title: 'Ok',
                         message: data.message,
                     });
-                    $("#sigName").val('');$("#sigEmail").val('');
+                    $("#updUsername").val(uName);
+                    $("#updPhone").val(hp);
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     iziToast.error({

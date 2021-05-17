@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const axios = require('axios');
 const db = require('./database');
 
 // Works as ENUM in Visual Studio (workaround for js) -jere
@@ -270,17 +271,50 @@ router.post('/battle', Middleware_APIKEY_FETCH, async (req, res) => {
     });
 })
 
-// param = battle_id, string : "p1"/"p2" , move_id <- from poke-api
+// param = battle_id, turn string : "p1"/"p2" , move_id <- from poke-api
 router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
     // storing user data for later
     let USER_DATA = req.USER_DATA;
 
+    // Check battle_id inside body
     let battle_id = req.body.battle_id;
     if (!battle_id) {
         return res.status(400).json({ status : res.statusCode , message: "Battle id not provided"});
     }
 
-    //ToDo : ALL OF MEEEEE LOVE ALLLL OF YOUUUU ~ <3 - jere :'v PS: my code is stupid but easly debuggable -someone anonymous
+    // Check param2 is it "p1/p2"
+    let turn = req.body.turn;
+    if (!turn) {
+        return res.status(400).json({ status : res.statusCode , message: "turn not provided"});
+    }
+    if (turn.toString().toLowerCase() !== "p1" && turn.toString().toLowerCase() !== "p2") {
+        return res.status(400).json({ status : res.statusCode , message: "Wrong turn string, please recheck"});
+    }
+
+    // get from database the battle_id
+    let connection = await db.connection();
+    let battle_query = await db.executeQuery(connection, `SELECT * FROM battle_session WHERE battle_id = '${battle_id}'`)
+    if (battle_query.length < 1) { // battle go bye bye~ :v
+        await db.release(connection); // destroy the connection
+        return res.status(404).json({ status : res.statusCode , message: "Battle id not found"});
+    }
+    let battle_data = battle_query[0];
+    let player_data = JSON.parse(battle_data[turn]); // { name : "PokemonX" , HP : (string/int) }
+
+    // Check move_id
+        // first we get all the move on pokeapi using pokemon-name as references
+    try {
+        let pokemon_data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/${player_data.name}`)).data;
+        let pokemon_moves = [];
+        for (let move_obj of pokemon_data.moves) {
+            pokemon_moves.push(move_obj.move.name);
+        }
+    }
+    catch (e) {
+        
+    }
+
+    // ToDo : ALL OF MEEEEE LOVE ALLLL OF YOUUUU ~ <3 - jere :'v PS: my code is stupid but easly debuggable -someone anonymous
 
 
 })

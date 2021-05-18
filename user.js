@@ -34,4 +34,41 @@ router.get('/',  async (req, res) => {
     }
 })
 
+router.post('/updateProfile', async (req,res) => {
+    let username    = req.body.username;
+    let phone       = req.body.phone;
+    let idUser      = req.body.userId;
+    let isNumPhone = /^\d+$/.test(phone);
+    
+    let connection = await db.connection();
+
+    if (isNumPhone) {
+        // ToDo Add Hashing
+        let query_insert = await db.executeQuery(connection,`UPDATE users SET username = '${username}', phone = '${phone}' WHERE id = ${idUser}`);
+
+        if (req.session.currentUser) {
+            req.session.destroy();
+        }
+
+        let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
+        await db.release(connection);
+        req.session.currentUser = {
+            data : {
+                id          : query_user[0].id,
+                username    : query_user[0].username,
+                email       : query_user[0].email,
+                phone       : query_user[0].phone,
+                type        : query_user[0].type,
+                apiKey      : query_user[0].apiKey,
+                lastActive  : query_user[0].lastActive,
+                isBanned    : query_user[0].isbanned,
+                picture     : query_user[0].picture,
+            }
+        };
+        return res.status(201).json({ status : 201, message : "User Profile Updated" });
+    } else {
+        return res.status(400).json({ status : 400, message : "Phone number format is wrong" });
+    }
+})
+
 module.exports = router

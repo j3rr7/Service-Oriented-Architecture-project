@@ -28,6 +28,31 @@ const user = require('./user');
 const admin = require('./admin');
 
 /**
+ * Attempt to cache pokemon stats from rapidAPI
+ */
+let CachePokemonData = () => {
+    let fs = require('fs');
+    let axios = require('axios');
+    let options = {
+        method: 'GET',
+        url: 'https://pokemon-go1.p.rapidapi.com/pokemon_stats.json',
+        headers: {
+            'x-rapidapi-key': 'c3da140abamsh49ffb2e98f067d7p14bb56jsn157f3859ac67',
+            'x-rapidapi-host': 'pokemon-go1.p.rapidapi.com'
+        }
+    };
+    axios.request(options).then(function (response) {
+        fs.writeFile('pokemon_stats.json', response.data, function (err) {
+            if (err) return console.log(err);
+            console.info('Data Cached');
+        });
+    }).catch(function (error) {
+        console.error(error);
+    });
+}
+
+
+/**
  * @ BEGIN EXPRESS FUNCTION
  */
 

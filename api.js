@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
 const axios = require('axios');
 const db = require('./database');
 
@@ -251,7 +252,7 @@ router.post('/battle', Middleware_APIKEY_FETCH, async (req, res) => {
 
         if (err instanceof SyntaxError) {
             await db.release(connection);
-            return res.status(400).send({
+            return res.status(400).json({
                 status : "Data Error! check your p1 or p2 syntax"
             });
         }
@@ -265,7 +266,7 @@ router.post('/battle', Middleware_APIKEY_FETCH, async (req, res) => {
         { battle_id : battle_id , user_id : USER_DATA.id, p1 : JSON.stringify(p1) , p2 : JSON.stringify(p2) });
 
     await db.release(connection);
-    return res.status(200).send({
+    return res.status(200).json({
         battle_id : battle_id,
         pokemon : { p1 : p1, p2 : p2 }
     });
@@ -294,21 +295,36 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
     // get from database the battle_id
     let connection = await db.connection();
     let battle_query = await db.executeQuery(connection, `SELECT * FROM battle_session WHERE battle_id = '${battle_id}'`)
+
+        // Check if battle id is found
     if (battle_query.length < 1) { // battle go bye bye~ :v
         await db.release(connection); // destroy the connection
         return res.status(404).json({ status : res.statusCode , message: "Battle id not found"});
     }
+
+        // Store the battle data into a variable for easy access
     let battle_data = battle_query[0];
+
+        // Check if battle is not finished or dropped
+    if ( parseInt(battle_data.status) !== 0) {
+        await db.release(connection); // destroy the connection
+        switch ( parseInt(battle_data.status)) {
+            case 1:
+                return res.status(200).json({ status : res.statusCode , message: "Battle is already finished"});
+            case 2:
+                return res.status(200).json({ status : res.statusCode , message: "Battle is Over"});
+        }
+    }
+
+    //
+
     let player_data = JSON.parse(battle_data[turn]); // { name : "PokemonX" , HP : (string/int) }
 
     // Check move_id
         // first we get all the move on pokeapi using pokemon-name as references
     try {
         let pokemon_data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/${player_data.name}`)).data;
-        let pokemon_moves = [];
-        for (let move_obj of pokemon_data.moves) {
-            pokemon_moves.push(move_obj.move.name);
-        }
+
     }
     catch (e) {
         
@@ -330,6 +346,42 @@ router.post('/battle/end', Middleware_APIKEY_FETCH, async (req, res) => {
 
 })
 
+//endregion
+//#endregion
+
+//#region POKEMON API
+//region POKEMON API
+
+let CachePokemonData = async () => {
+    let pokemon_data_from_url = (await axios.get('https://pokeapi.co/api/v2/pokemon?offset=0&limit=100')).data;
+    let stream = fs.createWriteStream("pokemon_data.json", {flags:'a'});
+    let data = []
+    for (let elem of pokemon_data_from_url.results) { data.push(elem); }
+    while(pokemon_data_from_url.next !== null) {
+        pokemon_data_from_url = (await axios.get(pokemon_data_from_url.next)).data;
+        for (let elem of pokemon_data_from_url.results) { data.push(elem); }
+    }
+    stream.write(JSON.stringify(data,null,4));
+    stream.end();
+    console.log("POKEMON CACHED");
+}
+
+// param entries (id/name)
+router.get('/pokemon/', async (req, res) => {
+    try {
+        let entries = req.query.entries;
+
+        //let pokemon_data = await axios.get(``);
+
+    } catch (e) {
+        console.log(e.message);
+        return res.status(500).json({ status : res.statusCode , message: "Something error" } );
+    }
+})
+
+router.get('/pokemon/random', async (req, res) => {
+
+})
 //endregion
 //#endregion
 

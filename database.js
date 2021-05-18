@@ -10,7 +10,7 @@ const dbConfig  = {
     host            : process.env.SQL_HOST || 'remotemysql.com',
     user            : process.env.SQL_USER || 'TUxTDR4n15',
     password        : process.env.SQL_PASS || 'dC9HKc80v1',
-    database        : process.env.SQL_DB || 'TUxTDR4n15',
+    database        : process.env.SQL_DB   || 'TUxTDR4n15',
     port            : 3306
 };
 
@@ -61,7 +61,7 @@ const release = (conn) => {
 
         return new Promise((resolve, reject) => {
             //console.log("MySQL pool destroyed: threadId " + conn.threadId);
-            //resolve(connection.release());
+            // resolve(connection.release());
             resolve(conn.destroy());
         });
 

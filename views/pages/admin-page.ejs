@@ -3,8 +3,161 @@
 <head>
     <%- include("../partials/header.ejs") %>
     <link rel="stylesheet" type="text/css" href="/stylesheets/user.css" />
+
+
+    <script>
+
+        function ban(e){
+            
+            
+
+            let temp = $(e);            
+            let id = temp.children('input[name=id_user]').val()
+            // console.log(id)
+            // alert(temp.val())
+            
+            // alert(id)
+            $.ajax({
+                url:'/admin/ban',
+                data:{
+                    id :id
+                },
+                method:'PUT',
+                success:function(response){
+                    // alert('succees')
+                    console.log(response)
+                    window.location.reload(false)
+                },
+                error:function(){
+                    alert("error")
+                }
+            })
+        }
+       
+
+        $(document).ready(()=>{
+
+
+            $("#formSearchUser").submit(function(e){
+                e.preventDefault();
+                let username = $("input[name=username]").val();
+                // alert(username);
+                $.ajax({
+                    url:"/admin/users",
+                    type:"GET",
+                    data:{
+                        username:username,
+                    },
+                    success:function(response){
+                        console.log(response)
+                        $("#body_table_search").html('');
+                        let loop = 1;
+                        if(response.length ==0){
+                            alert('user not found')
+                        }
+                        response.forEach(e => {
+                            $("#body_table_search").append(`
+                            <tr>
+                                <th scope="row">${loop}</th>    
+                                <td>${e.username}</td>
+                                <td>${e.email}</td>
+                                <td>${e.phone}</td>
+                            </tr>
+                            `);
+                            loop++;
+                        });
+                    },
+                    error:function(){
+                        console.log("error")
+                    }
+                  
+
+                });
+
+            })
+       
+            $("#formBan").submit((e)=>{
+                e.preventDefault()
+                let username = $("input[name=username_ban]").val();
+                let id = $("input[name=id_ban]").val();
+                // alert(username + '' + id)
+                $.ajax({
+                    url:"/admin/users",
+                    type:"GET",
+                    data:{
+                        username:username,
+                        id:id
+                    },
+                    success:function(response){
+                        console.log(response)
+                        if( response.length ==0){
+                            alert("User Not Found")
+                        }
+                        $("#body_table_ban").html('');
+                        let loop = 1;
+                        response.forEach(e => {
+                            let role = ''
+                            if(e.type == -1){
+                                role= 'Admin'
+                            }else if(e.type == 0 ){
+                                role = 'Reguler'
+                            }else if(e.type == 1){
+                                role = 'Supporter'
+                            }else if (e.type == 2){
+                                role = 'Premium'
+                            }
+                            
+                            button = ''
+                            if(e.isbanned ==0){
+                                button = `<form action="" onsubmit="return false" onclick="ban(this)" class='banButton' method="POST">
+                                            <input type="hidden" value="${e.id}" name="id_user">
+                                            <input type="submit" value="Ban" class="btn btn-danger">
+                                        </form>`
+                            }else{
+                                button = `<form action="" onsubmit="return false" onclick="ban(this)" class='banButton' method="POST">
+                                            <input type="hidden" value="${e.id}" name="id_user">
+                                            <input type="submit" value="UnBan" class="btn btn-warning">
+                                        </form>`
+
+                            }
+
+
+                                    
+
+                            $("#body_table_ban").append(`
+                            <tr>
+                                <th scope="row">${loop}</th>    
+                                <td>${e.username}</td>
+                                <td>${role}</td>
+                                <td>${button}</td>
+                                
+                            </tr>
+                            `);
+                            loop++;
+                        });
+                    },
+                    error:function(){
+                        console.log("error")
+                    }
+                  
+
+                });                
+
+
+            })
+        
+            
+        
+        })
+
+        
+    </script>
+
+
+
 </head>
 <body>
+    
 <div class="ct" id="t1">
     <div class="ct" id="t2">
         <div class="ct" id="t3">
@@ -14,6 +167,12 @@
                         <a href="#t1"><li class="icon fad fa-house" id="uno"></li></a>
                         <a href="#t2"><li class="icon fad fa-user-alt" id="dos"></li></a>
                         <a href="#t3"><li class="icon fad fa-user-alt" id="tres"></li></a>
+
+                        <% if ( user.type >= 0 ) { %>
+                            <!--a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a-->
+                            <a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a>
+                        <% } %>
+
                         <% if ( user.type >= 0 ) { %>
                             <!--a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a-->
                             <a href="#t4"><li class="icon fad fa-book" id="cuatro"></li></a>
@@ -44,17 +203,20 @@
                                     <div class="hint">For finding the users</div>
                                 </div>
                                 <div class="card-body">
-                                    <form class="form text-dark" action="">
+
+                                    <form id="formSearchUser" class="form text-dark" action="">
                                         <div class="form-group col-md-12">
-                                            <label for="bm-weburl">Search by ID</label>
-                                            <input class="form-control" id="" type="text" required="" autocomplete="off" name="id_user">
+                                            <label for="bm-weburl">Search by username</label>
+                                            <input class="form-control" id="" type="text"  autocomplete="off" name="username">
                                          </div>
                                          <div class="form-group">
                                              <input class="btn btn-primary " type="Submit" value="Search">
-    
+                                            
                                          </div>
                                     </form>
                                 </div>
+
+
                             </div>
 
                             <div class="card">
@@ -66,30 +228,19 @@
                                 <thead>
                                   <tr>
                                     <th scope="col">#</th>
-                                    <th scope="col">First</th>
-                                    <th scope="col">Last</th>
-                                    <th scope="col">Handle</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">phone</th>
                                   </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="body_table_search">
                                   <tr>
                                     <th scope="row">1</th>
                                     <td>Mark</td>
                                     <td>Otto</td>
                                     <td>@mdo</td>
                                   </tr>
-                                  <tr>
-                                    <th scope="row">2</th>
-                                    <td>Jacob</td>
-                                    <td>Thornton</td>
-                                    <td>@fat</td>
-                                  </tr>
-                                  <tr>
-                                    <th scope="row">3</th>
-                                    <td>Larry</td>
-                                    <td>the Bird</td>
-                                    <td>@twitter</td>
-                                  </tr>
+                           
                                 </tbody>
                               </table>
 
@@ -107,16 +258,18 @@
                                     <div class="hint">For Unbaning or banning the user</div>
                                 </div>
                                 <div class="card-body">
-                                    <form class="form text-dark" action="">
+                                    <form class="form text-dark" action="" id="formBan">
                                         <div class="form-group col-md-12">
                                             <label for="bm-weburl">Search by ID</label>
-                                            <input class="form-control" id="" type="text" required="" autocomplete="off" name="id_user">
+                                            <input class="form-control" id="" type="text"  autocomplete="off" name="id_ban">
                                          </div>
                                         <div class="form-group col-md-12">
                                             <label for="bm-weburl">Search by Username</label>
-                                            <input class="form-control" id="" type="text" required="" autocomplete="off" name="username_user">
+                                            <input class="form-control" id="" type="text"  autocomplete="off" name="username_ban">
                                          </div>
                                          <div class="form-group">
+                                             <small>Default search is ID </small>
+                                             <br>
                                              <input class="btn btn-primary " type="Submit" value="Search">
                                          </div>
                                     </form>
@@ -132,30 +285,13 @@
                                 <thead>
                                   <tr>
                                     <th scope="col">#</th>
-                                    <th scope="col">First</th>
-                                    <th scope="col">Last</th>
-                                    <th scope="col">Handle</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Ban</th>
                                   </tr>
                                 </thead>
-                                <tbody>
-                                  <tr>
-                                    <th scope="row">1</th>
-                                    <td>Mark</td>
-                                    <td>Otto</td>
-                                    <td>@mdo</td>
-                                  </tr>
-                                  <tr>
-                                    <th scope="row">2</th>
-                                    <td>Jacob</td>
-                                    <td>Thornton</td>
-                                    <td>@fat</td>
-                                  </tr>
-                                  <tr>
-                                    <th scope="row">3</th>
-                                    <td>Larry</td>
-                                    <td>the Bird</td>
-                                    <td>@twitter</td>
-                                  </tr>
+                                <tbody id="body_table_ban">
+                                  
                                 </tbody>
                               </table>
 
@@ -203,6 +339,29 @@
 </div>
 </body>
 <script>
+
+    $("#formSearchUser").submit(function(e)
+    {
+        e.preventDefault();
+        let id = $("input[name=id_user]").val();
+
+        // <tbody id="body_table_search">
+        $.ajax({
+            url:"/admin/search",
+            type:"GET",
+            data:{
+                id:id,    
+            },
+            success:function(response){
+                alert(response)
+                
+            }
+
+        });
+
+    })
+
+
     function SignOut(){
         iziToast.question({
             timeout: 20000,

@@ -30,6 +30,8 @@ const admin = require('./admin');
 /**
  * @ BEGIN EXPRESS FUNCTION
  */
+
+
 app
     .use(session({ secret: config.App_ID || process.env.App_ID, resave: false, saveUninitialized: true, cookie: { maxAge: 1000 * 60 * 60 } }))
     .use(bodyParser.urlencoded({ extended: true }))
@@ -41,12 +43,26 @@ app
     .set('view engine', 'ejs')
 
     .get('/', (req, res) => {
+
+        req.session.currentUser = {
+            data : {
+                id          : 0,
+                username    : '',
+                email       : -1,
+                type        : -1,
+                apiKey      : '',
+                lastActive  : '',
+                isBanned    : '',
+                picture     : ''
+            }
+        };
         if (req.session.currentUser) { return res.redirect('/users') } // if session is found redirect to page user
         res.render('pages/index', { data : null })
     })
+
     .use('/api/', api)
     .use('/users/', user)
-    .use('/admin/',admin)
+    .use('/admin',admin)
 
     .listen(PORT, () => {
         console.log(`Listening on port ${PORT}`);

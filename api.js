@@ -272,7 +272,8 @@ router.post('/battle', Middleware_APIKEY_FETCH, async (req, res) => {
     });
 })
 
-// param = battle_id, turn string : "p1"/"p2" , move_id <- from poke-api
+// Battle calculated using base attack and base defense w/ effect
+// param = battle_id, turn string : "p1"/"p2"
 router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
     // storing user data for later
     let USER_DATA = req.USER_DATA;
@@ -316,23 +317,67 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
         }
     }
 
-    //
-
     let player_data = JSON.parse(battle_data[turn]); // { name : "PokemonX" , HP : (string/int) }
+    let enemy_data = JSON.parse(battle_data[turn === "p1" ? "p2" : "p1"]);// if player "p1" enemy is "p2" and you get the point
 
-    // Check move_id
-        // first we get all the move on pokeapi using pokemon-name as references
+    let randomRangeInt = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+        // Get Base Attack and Defend from pokemon provided
     try {
-        let pokemon_data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/${player_data.name}`)).data;
+        let player_pokemon_data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/${player_data.name}`)).data;
+        let enemy_pokemon_data = (await axios.get(`https://pokeapi.co/api/v2/pokemon/${enemy_data.name}`)).data;
 
+        //using some special damage calculation :'D using base level as 1, PS: -jere gtw wes sak isoku wae :')
+        //console.log("atk:" + player_pokemon_data.stats[1].base_stat /*base atk*/)
+        //console.log("def:" + enemy_pokemon_data.stats[2].base_stat /*enemy base def*/)
+        let dmg_calc = ((((2 * 1 /*level*/ / 5 + 2) * player_pokemon_data.stats[1].base_stat * player_pokemon_data.stats[1].base_stat / enemy_pokemon_data.stats[2].base_stat) / 50) + 2) * randomRangeInt(85,100) / 100;
+        let newEnemyData = (turn === "p1") ? battle_data.p2 : battle_data.p1;
+        newEnemyData = JSON.parse(newEnemyData);
+        newEnemyData.HP = newEnemyData.HP - Math.round(dmg_calc);
+
+        let faint = false;
+        //ToDo add 0 hp check here
+        if (newEnemyData.HP < 0) {
+            newEnemyData.HP = 0;
+            faint = true;
+        }
+
+        let string_action = `${player_data.name} attack ${enemy_data.name} \n ${enemy_data.name} HP Now ${newEnemyData.HP}`;
+
+        if (turn === "p1") {
+            await db.executeQuery(connection,
+                `UPDATE battle_session SET p2 = '${JSON.stringify(newEnemyData)}' WHERE battle_id = '${battle_id}'`)
+        } else {
+            await db.executeQuery(connection,
+                `UPDATE battle_session SET p1 = '${JSON.stringify(newEnemyData)}' WHERE battle_id = '${battle_id}'`)
+        }
+
+
+        if (faint) {
+            string_action += ` \n ${enemy_data.name} is fainted`
+            string_action += ` \n ${player_data.name} win`
+
+            await db.executeQuery(connection,
+                `UPDATE battle_session SET status = 1`)
+        }
+
+        await db.executeQuery(connection,
+            `INSERT INTO battle_record VALUES('${battle_id}','${string_action}')`)
+
+        return res.status(200).send({
+            status : res.statusCode,
+            battle_status : (faint) ? "ongoing":"finished",
+            battle_id : battle_id,
+            action : string_action
+        });
     }
     catch (e) {
-        
+        console.log(e);
+        return res.send(e.message)
     }
-
     // ToDo : ALL OF MEEEEE LOVE ALLLL OF YOUUUU ~ <3 - jere :'v PS: my code is stupid but easly debuggable -someone anonymous
-
-
 })
 
 // param = battle_id

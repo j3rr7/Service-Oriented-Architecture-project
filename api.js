@@ -368,7 +368,7 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
 
         return res.status(200).send({
             status : res.statusCode,
-            battle_status : (faint) ? "ongoing":"finished",
+            battle_status : (faint) ? "finished":"ongoing",
             battle_id : battle_id,
             action : string_action
         });

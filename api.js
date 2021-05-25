@@ -368,11 +368,26 @@ let CachePokemonData = async () => {
 
 // param entries (id/name)
 router.get('/pokemon/', async (req, res) => {
+
+    let name = req.query.name 
+    let id = req.query.id
+
+
+    let queryPokemon 
+    
+    if(id != null){
+        queryPokemon = `https://pokeapi.co/api/v2/pokemon/${id}`
+    }else if(name != null){
+        queryPokemon = `https://pokeapi.co/api/v2/pokemon/${name}`
+    }else{
+        queryPokemon = `https://pokeapi.co/api/v2/pokemon/`
+        // select offset 20 
+    }
     try {
-        let entries = req.query.entries;
-
-        //let pokemon_data = await axios.get(``);
-
+        let pokemon_data = {}
+        let resultPokemon = await axios(queryPokemon)
+        pokemon_data = resultPokemon.data   
+        return res.status(200).json(pokemon_data)
     } catch (e) {
         console.log(e.message);
         return res.status(500).json({ status : res.statusCode , message: "Something error" } );
@@ -381,7 +396,66 @@ router.get('/pokemon/', async (req, res) => {
 
 router.get('/pokemon/random', async (req, res) => {
 
+    
+    try{
+        let random_id =  Math.floor(Math.random()*800 )+89;
+        let queryPokemon = `https://pokeapi.co/api/v2/pokemon/${random_id}`
+        let resultPokemon = await axios(queryPokemon)
+        let pokemon_data = resultPokemon.data   
+        return res.status(200).json(pokemon_data)
+    }catch(e){
+        console.log(e.message);
+        return res.status(500).json({ status : res.statusCode , message: "Something error" } );
+    }
+
+
 })
+
+// add custom pokemon
+router.post('/pokemon',async (req,res)=>{
+    // return res.send('add custom pokemon')
+    let input = req.body 
+
+
+    
+
+    let conn = await  db.connection() 
+    let query = await db.executeQuery(conn,`select * 
+     from custom_pokemon`)
+     let kode= query
+    // let kode = (query[0].id).remove('C','');
+    // kode = parseInt(kode)
+
+    res.status(200).send(kode)
+
+
+
+})
+// delete custom pokemon
+router.delete('/pokemon',async (req,res)=>{
+
+    let id = req.body.id
+    let conn = await db.connection()
+    let query = await db.executeQuery(conn,`select * from custom_pokemon where id_custom_pokemon = '${$id}'`)
+    let pokemon = query[0]
+    if(pokemon == null){
+        res.status(404).send("Pokemon not found")
+    }else{
+        query = await db.executeQuery(conn,`delete from custom_pokemon where    id_custom_pokemon  = '${id}'`)
+        conn.release()
+        
+        res.status(200).json({
+            message : 'deleted',
+            pokemon :pokemon 
+        })
+
+    }
+    
+    return res.send('delete custom pokemon')
+
+})
+
+
 //endregion
 //#endregion
 

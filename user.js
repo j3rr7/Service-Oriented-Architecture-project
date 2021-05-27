@@ -5,34 +5,6 @@ const db = require('./database');
 
 const midtransClient = require('midtrans-client');
 // Create Snap API instance
-let snap = new midtransClient.Snap({
-        isProduction : false,
-        serverKey : 'SB-Mid-server-h-Yb-Oka9E5W3_1SlSNIvCHL',
-        clientKey : 'SB-Mid-client-5ISiuOKpNR4g_Prk'
-    });
-
-let parameter = {
-    "transaction_details": {
-        "order_id": "test-transaction-123",
-        "gross_amount": 200000
-    }, "credit_card":{
-        "secure" : true
-    }
-};
-
-snap.createTransaction(parameter)
-    .then((transaction)=>{
-        // transaction token
-        let transactionToken = transaction.token;
-        console.log('transactionToken:',transactionToken);
-
-        // transaction redirect url
-        let transactionRedirectUrl = transaction.redirect_url;
-        console.log('transactionRedirectUrl:',transactionRedirectUrl);
-    })
-    .catch((e)=>{
-        console.log('Error occured:',e.message);
-    });
 
 // Home page user route.
 router.get('/',  async (req, res) => {
@@ -64,6 +36,37 @@ router.get('/',  async (req, res) => {
         res.redirect('../')
     }
 })
+
+router.post('/subscription',async (req,res) =>{
+    let snap = new midtransClient.Snap({
+        isProduction : false,
+        serverKey : 'SB-Mid-server-h-Yb-Oka9E5W3_1SlSNIvCHL',
+        clientKey : 'SB-Mid-client-5ISiuOKpNR4g_Prk'
+    });
+
+    let parameter = {
+        "transaction_details": {
+            "order_id": "test-transaction-123",
+            "gross_amount": 200000
+        }, "credit_card":{
+            "secure" : true
+        }
+    };
+
+    snap.createTransaction(parameter)
+        .then((transaction)=>{
+            // transaction token
+            let transactionToken = transaction.token;
+            console.log('transactionToken:',transactionToken);
+
+            // transaction redirect url
+            let transactionRedirectUrl = transaction.redirect_url;
+            console.log('transactionRedirectUrl:',transactionRedirectUrl);
+        })
+        .catch((e)=>{
+            console.log('Error occured:',e.message);
+        });
+});
 
 router.post('/updateProfile', async (req,res) => {
     let username    = req.body.username;

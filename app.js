@@ -69,18 +69,18 @@ app
 
     .get('/', (req, res) => {
 
-        req.session.currentUser = {
-            data : {
-                id          : 0,
-                username    : '',
-                email       : -1,
-                type        : -1,
-                apiKey      : '',
-                lastActive  : '',
-                isBanned    : '',
-                picture     : ''
-            }
-        };
+        // req.session.currentUser = {
+        //     data : {
+        //         id          : 0,
+        //         username    : '',
+        //         email       : -1,
+        //         type        : -1,
+        //         apiKey      : '',
+        //         lastActive  : '',
+        //         isBanned    : '',
+        //         picture     : ''
+        //     }
+        // };
         if (req.session.currentUser) { return res.redirect('/users') } // if session is found redirect to page user
         res.render('pages/index', { data : null })
     })

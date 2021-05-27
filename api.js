@@ -366,6 +366,7 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
         await db.executeQuery(connection,
             `INSERT INTO battle_record VALUES('${battle_id}','${string_action}')`)
 
+        await db.release(connection); // destroy the connection
         return res.status(200).send({
             status : res.statusCode,
             battle_status : (faint) ? "finished":"ongoing",
@@ -374,6 +375,7 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
         });
     }
     catch (e) {
+        await db.release(connection); // destroy the connection
         console.log(e);
         return res.send(e.message)
     }
@@ -384,10 +386,47 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
 router.post('/battle/history', Middleware_APIKEY_FETCH, async (req, res) => {
     // storing user data for later
     let USER_DATA = req.USER_DATA;
+
+    let battle_id = req.body.battle_id;
+    if (!battle_id) {
+        return res.status(400).json({ status : res.statusCode , message: "Battle id is missing"});
+    }
+
+    let connection = await db.connection();
+
+    let battle_query = await db.executeQuery(connection, `SELECT * FROM battle_session WHERE battle_id = '${battle_id}'`)
+    // Check if battle id is found
+    if (battle_query.length < 1) { // battle go bye bye~ :v
+        await db.release(connection); // destroy the connection
+        return res.status(404).json({ status : res.statusCode , message: "Battle id not found"});
+    }
+
+    let battle_data_header = battle_query[0];
+    let battle_data_detail = [];
+
+    let battle_query_detail = await db.executeQuery(connection, `SELECT * FROM battle_record WHERE battle_id = '${battle_id}'`)
+
+    for (let element of battle_query_detail){
+        battle_data_detail.push(element.action);
+    }
+
+    await db.release(connection); // destroy the connection
+    return res.status(200).json({
+        battle_id : battle_id,
+        history : battle_data_detail
+    })
 })
 
-// param = battle_id
+// param = battle_id, reason (optional) if not reason is "abruptly end"
 router.post('/battle/end', Middleware_APIKEY_FETCH, async (req, res) => {
+    // storing user data for later
+    let USER_DATA = req.USER_DATA;
+
+    let battle_id = req.body.battle_id;
+    if (!battle_id) {
+        return res.status(400).json({ status : res.statusCode , message: "Battle id is missing"});
+    }
+
 
 })
 

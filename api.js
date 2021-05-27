@@ -366,6 +366,7 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
         await db.executeQuery(connection,
             `INSERT INTO battle_record VALUES('${battle_id}','${string_action}')`)
 
+        await db.release(connection); // destroy the connection
         return res.status(200).send({
             status : res.statusCode,
             battle_status : (faint) ? "finished":"ongoing",
@@ -374,6 +375,7 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
         });
     }
     catch (e) {
+        await db.release(connection); // destroy the connection
         console.log(e);
         return res.send(e.message)
     }
@@ -384,10 +386,47 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
 router.post('/battle/history', Middleware_APIKEY_FETCH, async (req, res) => {
     // storing user data for later
     let USER_DATA = req.USER_DATA;
+
+    let battle_id = req.body.battle_id;
+    if (!battle_id) {
+        return res.status(400).json({ status : res.statusCode , message: "Battle id is missing"});
+    }
+
+    let connection = await db.connection();
+
+    let battle_query = await db.executeQuery(connection, `SELECT * FROM battle_session WHERE battle_id = '${battle_id}'`)
+    // Check if battle id is found
+    if (battle_query.length < 1) { // battle go bye bye~ :v
+        await db.release(connection); // destroy the connection
+        return res.status(404).json({ status : res.statusCode , message: "Battle id not found"});
+    }
+
+    let battle_data_header = battle_query[0];
+    let battle_data_detail = [];
+
+    let battle_query_detail = await db.executeQuery(connection, `SELECT * FROM battle_record WHERE battle_id = '${battle_id}'`)
+
+    for (let element of battle_query_detail){
+        battle_data_detail.push(element.action);
+    }
+
+    await db.release(connection); // destroy the connection
+    return res.status(200).json({
+        battle_id : battle_id,
+        history : battle_data_detail
+    })
 })
 
-// param = battle_id
+// param = battle_id, reason (optional) if not reason is "abruptly end"
 router.post('/battle/end', Middleware_APIKEY_FETCH, async (req, res) => {
+    // storing user data for later
+    let USER_DATA = req.USER_DATA;
+
+    let battle_id = req.body.battle_id;
+    if (!battle_id) {
+        return res.status(400).json({ status : res.statusCode , message: "Battle id is missing"});
+    }
+
 
 })
 
@@ -413,11 +452,26 @@ let CachePokemonData = async () => {
 
 // param entries (id/name)
 router.get('/pokemon/', async (req, res) => {
+
+    let name = req.query.name 
+    let id = req.query.id
+
+
+    let queryPokemon 
+    
+    if(id != null){
+        queryPokemon = `https://pokeapi.co/api/v2/pokemon/${id}`
+    }else if(name != null){
+        queryPokemon = `https://pokeapi.co/api/v2/pokemon/${name}`
+    }else{
+        queryPokemon = `https://pokeapi.co/api/v2/pokemon/`
+        // select offset 20 
+    }
     try {
-        let entries = req.query.entries;
-
-        //let pokemon_data = await axios.get(``);
-
+        let pokemon_data = {}
+        let resultPokemon = await axios(queryPokemon)
+        pokemon_data = resultPokemon.data   
+        return res.status(200).json(pokemon_data)
     } catch (e) {
         console.log(e.message);
         return res.status(500).json({ status : res.statusCode , message: "Something error" } );
@@ -426,7 +480,66 @@ router.get('/pokemon/', async (req, res) => {
 
 router.get('/pokemon/random', async (req, res) => {
 
+    
+    try{
+        let random_id =  Math.floor(Math.random()*800 )+89;
+        let queryPokemon = `https://pokeapi.co/api/v2/pokemon/${random_id}`
+        let resultPokemon = await axios(queryPokemon)
+        let pokemon_data = resultPokemon.data   
+        return res.status(200).json(pokemon_data)
+    }catch(e){
+        console.log(e.message);
+        return res.status(500).json({ status : res.statusCode , message: "Something error" } );
+    }
+
+
 })
+
+// add custom pokemon
+router.post('/pokemon',async (req,res)=>{
+    // return res.send('add custom pokemon')
+    let input = req.body 
+
+
+    
+
+    let conn = await  db.connection() 
+    let query = await db.executeQuery(conn,`select * 
+     from custom_pokemon`)
+     let kode= query
+    // let kode = (query[0].id).remove('C','');
+    // kode = parseInt(kode)
+
+    res.status(200).send(kode)
+
+
+
+})
+// delete custom pokemon
+router.delete('/pokemon',async (req,res)=>{
+
+    let id = req.body.id
+    let conn = await db.connection()
+    let query = await db.executeQuery(conn,`select * from custom_pokemon where id_custom_pokemon = '${$id}'`)
+    let pokemon = query[0]
+    if(pokemon == null){
+        res.status(404).send("Pokemon not found")
+    }else{
+        query = await db.executeQuery(conn,`delete from custom_pokemon where    id_custom_pokemon  = '${id}'`)
+        conn.release()
+        
+        res.status(200).json({
+            message : 'deleted',
+            pokemon :pokemon 
+        })
+
+    }
+    
+    return res.send('delete custom pokemon')
+
+})
+
+
 //endregion
 //#endregion
 

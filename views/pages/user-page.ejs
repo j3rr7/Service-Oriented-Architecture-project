@@ -85,7 +85,11 @@
                                         <% if ( user.type >= 1 ) { %>
                                             <a href="javascript:void(0)" class="purchase-plan"><i class="fad fa-badge-check" style="color: blue;font-size: 15px"></i></a>
                                         <% } else { %>
-                                            <a href="javascript:void(0)" class="purchase-plan">Buy</a>
+                                            <!-- <form action="" method="post">
+                                                <input type="submit" name="prem" value="Buy" class="purchase-plan">
+                                                <input type="url" name="prem" id=""> -->
+                                                <a href="javascript:void(0)" class="purchase-plan" id="prem">Buy</a>
+                                            <!-- </form> -->
                                         <% } %>
                                     </div>
                                     <div class="price-option high">
@@ -116,7 +120,7 @@
                                         <% if (user.type >= 2) { %>
                                             <a href="javascript:void(0)" class="purchase-plan"><i class="fad fa-badge-check" style="color: yellow;font-size: 15px"></i></a>
                                         <% } else { %>
-                                            <a href="javascript:void(0)" class="purchase-plan">Buy</a>
+                                            <a href="javascript:void(0)" class="purchase-plan" id="support">Buy</a>
                                         <% } %>
                                     </div>
                                 </div>
@@ -221,6 +225,23 @@
     $("#UpdbtnSubmit").on('click', () => {
         Update();
     })
+
+    $("#prem").on('click', () => {
+        BuyPremium();
+    })
+
+    $("#support").on('click', () => {
+        BuySupport();
+    })
+
+    function BuyPremium(){
+        let id    = $("#idUser").val().toString();
+        alert(id);
+    }
+
+    function BuySupport(){
+        alert("Masuk Support");
+    }
 
     function Update(){
         let uName   = $("#updUsername").val().toString();

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const db = require('./database');
+const middleware_APIKEY = require('./middleware');
 
 const midtransClient = require('midtrans-client');
 // Create Snap API instance
@@ -37,26 +38,53 @@ router.get('/',  async (req, res) => {
     }
 })
 
-router.post('/subscription',async (req,res) =>{
+router.post('/subscription', middleware_APIKEY, async (req,res) =>{
+    let userData =  req.USER_DATA;
+    let buyPremorSupp = req.body.premsupp; // 1 for Premium , 2 For Support
+
     let snap = new midtransClient.Snap({
         isProduction : false,
-        serverKey : 'SB-Mid-server-h-Yb-Oka9E5W3_1SlSNIvCHL',
-        clientKey : 'SB-Mid-client-5ISiuOKpNR4g_Prk'
+        serverKey : 'SB-Mid-server-lG_QG_wufiOJpP0_ht0Wn29i',
+        clientKey : 'SB-Mid-client-Uc2OOrA47W4PE5zX'
     });
 
-    let parameter = {
-        "transaction_details": {
-            "order_id": "test-transaction-123",
-            "gross_amount": 200000
-        }, "credit_card":{
-            "secure" : true
-        }
-    };
+    let parameter;
+ 
+    if(userData.type != 0){
+        return res.status(400).json({ status : res.statusCode, message : "Already a Premium Account!" });
+    }
+    if(parseInt(buyPremorSupp) == 1)
+    {
+        parameter = {
+            "transaction_details": {
+                "order_id": "test-transaction-123",
+                "gross_amount": 150000
+            }, "credit_card":{
+                "secure" : true
+            }
+        };    
+    }
+    else if(parseInt(buyPremorSupp) == 2)
+    {
+        parameter = {
+            "transaction_details": {
+                "order_id": "test-transaction-123",
+                "gross_amount": 750000
+            }, "credit_card":{
+                "secure" : true
+            }
+        };    
+    }
+    else{
+        return res.status(400).json({ status : res.statusCode, message : "Wrong Subscription Type Entry!" });
+    }
 
+   
     snap.createTransaction(parameter)
         .then((transaction)=>{
             // transaction token
             let transactionToken = transaction.token;
+            console.log('transactiondetail:',transaction);
             console.log('transactionToken:',transactionToken);
 
             // transaction redirect url

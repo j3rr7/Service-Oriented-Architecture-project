@@ -360,7 +360,7 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
             string_action += ` \n ${player_data.name} win`
 
             await db.executeQuery(connection,
-                `UPDATE battle_session SET status = 1`)
+                `UPDATE battle_session SET status = 1 WHERE battle_id = '${battle_id}'`)
         }
 
         await db.executeQuery(connection,
@@ -379,7 +379,6 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
         console.log(e);
         return res.send(e.message)
     }
-    // ToDo : ALL OF MEEEEE LOVE ALLLL OF YOUUUU ~ <3 - jere :'v PS: my code is stupid but easly debuggable -someone anonymous
 })
 
 // param = battle_id
@@ -427,7 +426,27 @@ router.post('/battle/end', Middleware_APIKEY_FETCH, async (req, res) => {
         return res.status(400).json({ status : res.statusCode , message: "Battle id is missing"});
     }
 
+    let connection = await db.connection();
 
+    await db.executeQuery(connection,
+        `UPDATE battle_session SET status = 1 WHERE battle_id = '${battle_id}'`)
+
+    let string_action = "Battle Ended, ";
+
+    if (req.body.reason) {
+        string_action += req.body.reason;
+    }
+    else {
+        string_action = "Battle abruptly ended";
+    }
+
+    await db.executeQuery(connection,
+        `INSERT INTO battle_record VALUES('${battle_id}','${string_action}')`)
+
+    return res.status(200).json({
+        status : res.statusCode,
+        reason : req.body.reason
+    })
 })
 
 //endregion

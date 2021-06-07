@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const axios = require('axios');
 const db = require('./database');
+const Middleware_APIKEY_FETCH =  require('./middleware');
 
 // Works as ENUM in Visual Studio (workaround for js) -jere
 const ERROR_REASON = Object.freeze({
@@ -41,42 +42,42 @@ function GenerateApiKey( length ) {
     data stored on ** req.USER_DATA **
 </summary>
  */
-async function Middleware_APIKEY_FETCH( req, res, next ) {
-    // x-api-key is missing return error message
-    if (!req.header("x-api-key")) {
-        return res.status(401).send({
-            status  : res.statusCode,
-            //reason  : ERROR_REASON.MissingKeyError, /* OPTIONAL using enum to explain and show error message instead of hard coded string */
-            message : "Missing API-KEY"
-        });
-    }
+// async function Middleware_APIKEY_FETCH( req, res, next ) {
+//     // x-api-key is missing return error message
+//     if (!req.header("x-api-key")) {
+//         return res.status(401).send({
+//             status  : res.statusCode,
+//             //reason  : ERROR_REASON.MissingKeyError, /* OPTIONAL using enum to explain and show error message instead of hard coded string */
+//             message : "Missing API-KEY"
+//         });
+//     }
 
-    // Get User Data from API-Key
-    let connection = await db.connection();
+//     // Get User Data from API-Key
+//     let connection = await db.connection();
 
-    let query_user = await db.executeQuery(connection,
-        `SELECT * FROM users WHERE apiKey = :apiKey`,
-        { apiKey : req.header("x-api-key") });
+//     let query_user = await db.executeQuery(connection,
+//         `SELECT * FROM users WHERE apiKey = :apiKey`,
+//         { apiKey : req.header("x-api-key") });
 
-    // Hmm why i add this ... ? :V idk bored maybe :'v
-    if (query_user.length < 1) {
-        await db.release(connection);
-        return res.status(404).json({ status : res.statusCode , message: "User Not Found" });
-    }
+//     // Hmm why i add this ... ? :V idk bored maybe :'v
+//     if (query_user.length < 1) {
+//         await db.release(connection);
+//         return res.status(404).json({ status : res.statusCode , message: "User Not Found" });
+//     }
 
-    // Banned User .... why? idk :v
-    if ( parseInt(query_user[0].isbanned) === 1) {
-        await db.release(connection);
-        return res.status(403).json({ status : res.statusCode , message: "User Banned" });
-    }
+//     // Banned User .... why? idk :v
+//     if ( parseInt(query_user[0].isbanned) === 1) {
+//         await db.release(connection);
+//         return res.status(403).json({ status : res.statusCode , message: "User Banned" });
+//     }
 
-    // ToDo Api Hit Here (?) @Marvel -jere
+//     // ToDo Api Hit Here (?) @Marvel -jere
 
-    // release connection and store user data to ** req.USER_DATA **
-    await db.release(connection);
-    req.USER_DATA = query_user[0];
-    next();
-}
+//     // release connection and store user data to ** req.USER_DATA **
+//     await db.release(connection);
+//     req.USER_DATA = query_user[0];
+//     next();
+// }
 
 // Home page api route.
 router.get('/', (req, res) => {
@@ -360,7 +361,7 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
             string_action += ` \n ${player_data.name} win`
 
             await db.executeQuery(connection,
-                `UPDATE battle_session SET status = 1`)
+                `UPDATE battle_session SET status = 1 WHERE battle_id = '${battle_id}'`)
         }
 
         await db.executeQuery(connection,
@@ -379,7 +380,6 @@ router.post('/battle/attack', Middleware_APIKEY_FETCH, async (req, res) => {
         console.log(e);
         return res.send(e.message)
     }
-    // ToDo : ALL OF MEEEEE LOVE ALLLL OF YOUUUU ~ <3 - jere :'v PS: my code is stupid but easly debuggable -someone anonymous
 })
 
 // param = battle_id
@@ -427,7 +427,27 @@ router.post('/battle/end', Middleware_APIKEY_FETCH, async (req, res) => {
         return res.status(400).json({ status : res.statusCode , message: "Battle id is missing"});
     }
 
+    let connection = await db.connection();
 
+    await db.executeQuery(connection,
+        `UPDATE battle_session SET status = 1 WHERE battle_id = '${battle_id}'`)
+
+    let string_action = "Battle Ended, ";
+
+    if (req.body.reason) {
+        string_action += req.body.reason;
+    }
+    else {
+        string_action = "Battle abruptly ended";
+    }
+
+    await db.executeQuery(connection,
+        `INSERT INTO battle_record VALUES('${battle_id}','${string_action}')`)
+
+    return res.status(200).json({
+        status : res.statusCode,
+        reason : req.body.reason
+    })
 })
 
 //endregion

@@ -5,7 +5,6 @@ const db = require('./database');
 
 const midtransClient = require('midtrans-client');
 // Create Snap API instance
-
 // Home page user route.
 router.get('/',  async (req, res) => {
     res.setHeader('Content-Type', 'text/html')
@@ -104,5 +103,86 @@ router.post('/updateProfile', async (req,res) => {
         return res.status(400).json({ status : 400, message : "Phone number format is wrong" });
     }
 })
+
+// just for supporter 
+
+// Get Super Custom Pokemon (GET) 
+// Add Super Custom Pokemon (POST) 
+// Remove Super Custom Pokemon (DELETE)
+
+// just for suporter 
+function middlewareSupporter(){
+
+}
+
+var dummyUsers = {
+    id :4,
+    type :2
+}
+router.get('/customPokemon',middlewareSupporter, async (req,res)=>{ 
+
+    let conn = await db.connection();
+    let query = await db.executeQuery(conn,`select * from custom pokemon where fk_users = ${dummyUsers.id}'`)
+    if(query[0]==null){
+        res.status(404).send({
+            message :"No Supporter Custome Pokemon Found"
+        })
+    }else{
+        res.status(200).send({
+            pokemons : query
+        })
+    }
+
+});
+router.post('/customPokemon',middlewareSupporter, async (req,res)=>{ 
+    
+    let dummyPokemon = {
+         nama_pokemon :"Fuzzy",
+         nature :"Cold Fire",
+         base_attack : 10,
+         base_defend : 20,
+         base_hp : 30 ,
+         fk_users : dummyUsers.id,
+         status :2 
+    }
+
+    let conn = await db.connection();
+    let query = await db.executeQuery(conn,`insert into custom_pokemon(
+        nama_pokemon,
+        nature,
+        base_attack,
+        base_defend,
+        base_hp,
+        fk_users,
+        status
+    ) 
+    values(
+        '${dummyUsers.nama_pokemon}',
+        '${dummyUsers.nature}',
+        ${dummyUsers.base_attack},
+        ${dummyUsers.base_defend},
+        ${dummyUsers.base_hp},
+        ${dummyUsers.fk_users},
+        2
+    )`);
+
+    res.status(200).json({
+        message : "Pokemon Added"
+    })  
+
+
+});
+router.delete('/customPokemon',middlewareSupporter, async (req,res)=>{ 
+
+    let pokemon = {
+        id_pokemon : -1
+    }
+    let conn = await db.connection();
+    let query = await db.executeQuery(conn,`delete from custom_pokemon where id_pokemon = ${pokemon.id_pokemon}`); // 
+    
+    res.status(200).send("Pokemon deleted")
+
+
+});
 
 module.exports = router

@@ -5,8 +5,14 @@ const db = require('./database');
 const middleware_APIKEY = require('./middleware');
 
 const midtransClient = require('midtrans-client');
+
+router.get('/test',(req,res)=>{
+    return res.send("iki test")
+})
+
 // Create Snap API instance
 // Home page user route.
+
 router.get('/',  async (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     if (req.session.currentUser) {
@@ -139,8 +145,22 @@ router.post('/updateProfile', async (req,res) => {
 // Remove Super Custom Pokemon (DELETE)
 
 // just for suporter 
-function middlewareSupporter(){
+async function middlewareSupporter(req,res,next){
 
+
+    if(req.session.currentUser == null){
+        return res.status(403).send("Login First")
+    }
+    let user = req.session.currentUser.data
+    if(user.type != 2){
+        return res.status(403).send("Forbidden acces, only for supporter")
+    }
+
+    req.user = user;
+    next()
+
+   
+   
 }
 
 var dummyUsers = {
@@ -149,66 +169,95 @@ var dummyUsers = {
 }
 router.get('/customPokemon',middlewareSupporter, async (req,res)=>{ 
 
-    let conn = await db.connection();
-    let query = await db.executeQuery(conn,`select * from custom pokemon where fk_users = ${dummyUsers.id}'`)
-    if(query[0]==null){
-        res.status(404).send({
-            message :"No Supporter Custome Pokemon Found"
-        })
-    }else{
-        res.status(200).send({
-            pokemons : query
-        })
+    let user = req.user
+
+    try{
+        let conn = await db.connection();
+        let query = await db.executeQuery(conn,`select * from custom_pokemon where fk_users = ${user.id}`)
+        if(query[0]==null){
+            res.status(404).send({
+                message :"No Supporter Custom Pokemon Found"
+            })
+        }else{
+            res.status(200).send({
+                pokemons : query
+            })
+        }
+    }catch(ex){
+        return res.status(500).send("Error DB")
     }
 
 });
+    
 router.post('/customPokemon',middlewareSupporter, async (req,res)=>{ 
     
-    let dummyPokemon = {
-         nama_pokemon :"Fuzzy",
-         nature :"Cold Fire",
-         base_attack : 10,
-         base_defend : 20,
-         base_hp : 30 ,
-         fk_users : dummyUsers.id,
-         status :2 
+
+
+    let user = req.user;
+
+    let input  = req.body;
+    let nama = input.nama_pokemon
+    let nature = input.nature 
+    let base_attack  = input.base_attack
+    let base_defend = input.base_defend
+    let base_hp = input.base_hp 
+    let fk_user = user.id //pengen e dapet dari session 
+    let status = 2; // just for supporter
+
+
+    let pokemon = {
+        nama_pokemon :input.nama_pokemon,
+        nature :input.nature,
+        base_attack : input.base_attack,
+        base_defend : input.base_defend,
+        base_hp : input.base_hp,
+        fk_users : fk_user,
+        status :status
     }
-
-    let conn = await db.connection();
-    let query = await db.executeQuery(conn,`insert into custom_pokemon(
-        nama_pokemon,
-        nature,
-        base_attack,
-        base_defend,
-        base_hp,
-        fk_users,
-        status
-    ) 
-    values(
-        '${dummyUsers.nama_pokemon}',
-        '${dummyUsers.nature}',
-        ${dummyUsers.base_attack},
-        ${dummyUsers.base_defend},
-        ${dummyUsers.base_hp},
-        ${dummyUsers.fk_users},
-        2
-    )`);
-
-    res.status(200).json({
-        message : "Pokemon Added"
-    })  
-
+    try{
+        let conn = await db.connection();
+        let query = await db.executeQuery(conn,`insert into custom_pokemon (
+            nama_pokemon,
+            nature,
+            base_attack,
+            base_defend,
+            base_hp,
+            fk_users,
+            status
+        )
+        values(
+            '${pokemon.nama_pokemon}',
+            '${pokemon.nature}',
+            ${pokemon.base_attack},
+            ${pokemon.base_defend},
+            ${pokemon.base_hp},
+            ${pokemon.fk_users},
+            ${pokemon.status}
+        )`)
+        res.status(201).send({
+            message :"Pokemon Added"
+        })
+    }catch(ex){
+        console.log(ex)
+        return res.status(500).send("Error DB")
+    }
+    
 
 });
 router.delete('/customPokemon',middlewareSupporter, async (req,res)=>{ 
 
-    let pokemon = {
-        id_pokemon : -1
+    let conn , query
+    let id = req.body.id_pokemon
+
+    conn = await db.connection();
+    query = await db.executeQuery(conn,`select * from custom_pokemon where id_pokemon = ${id}`)
+    if(query[0]!=null){
+        query = await db.executeQuery(conn,`delete from custom_pokemon where id_pokemon = ${id}`); 
+        return res.status(200).send("Pokemon deleted")
+    }else{
+        return res.status(404).send("Pokemon not found");
     }
-    let conn = await db.connection();
-    let query = await db.executeQuery(conn,`delete from custom_pokemon where id_pokemon = ${pokemon.id_pokemon}`); // 
-    
-    res.status(200).send("Pokemon deleted")
+
 
 
 });

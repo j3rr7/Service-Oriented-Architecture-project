@@ -180,7 +180,12 @@ router.post('/signin', async (req, res) => {
                 picture     : query_user[0].picture,
             }
         };
-        return res.status(200).json({ status : 200 , message: "User Logged in", data : query_user[0].username });
+        return res.status(200).json({ 
+            status : 200 ,
+            message: "User Logged in",
+            data : query_user[0].username,
+            session  : req.session  
+        });
     }
 
     return res.status(400).json({ status : 400 , message: "Wrong Password"});

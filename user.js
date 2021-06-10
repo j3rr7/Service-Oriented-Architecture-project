@@ -43,6 +43,60 @@ router.get('/',  async (req, res) => {
     }
 })
 
+router.post('/Unsubscribe', middleware_APIKEY, async (req,res) =>{
+    let idUser      = req.body.userId;
+    let tipe        = 0;
+
+    let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
+    await db.release(connection);
+
+    if(query_user.length){
+        res.status(404).send({
+            message :"User Not Found!"
+        })
+    }
+    
+    if(query_user[0].isbanned == 0){
+        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe} WHERE id = ${idUser}`);
+        
+        if (query_update.affectedRows === 0) {
+            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+        }
+
+        return res.status(201).json({ status : res.statusCode, message : "Unsubscribe Success!" });
+    }else{
+        return res.status(400).json({ status : res.statusCode, message : "User has been Banned!" });
+    }
+});
+
+router.get('/subscription', middleware_APIKEY, async (req,res) =>{
+    let idUser      = req.body.userId;
+    let jenisSubs = "";
+
+    let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
+    await db.release(connection);
+
+    if(query_user.length){
+        res.status(404).send({
+            message :"User Not Found!"
+        })
+    }
+    
+    if(query_user[0].isbanned == 0){
+        if(parseInt(query_user[0].type) == 0){
+            jenisSubs  = "Reguler";
+        }else if(parseInt(query_user[0].type) == 1){
+            jenisSubs  = "Premium";
+        }else if(parseInt(query_user[0].type) == 2){
+            jenisSubs  = "Supporter";
+        }
+    
+        return res.status(201).json({ status : res.statusCode, message : "You are a " + jenisSubs +" user!" });
+    }else{
+        return res.status(400).json({ status : res.statusCode, message : "User has been Banned!" });
+    }
+});
+
 router.post('/subscription', middleware_APIKEY, async (req,res) =>{
     let userData =  req.USER_DATA;
     let buyPremorSupp = req.body.premsupp; // 1 for Premium , 2 For Support
@@ -111,8 +165,10 @@ router.post('/updateProfile', async (req,res) => {
 
     if (isNumPhone) {
         // ToDo Add Hashing
-        let query_insert = await db.executeQuery(connection,`UPDATE users SET username = '${username}', phone = '${phone}' WHERE id = ${idUser}`);
-
+        let query_update = await db.executeQuery(connection,`UPDATE users SET username = '${username}', phone = '${phone}' WHERE id = ${idUser}`);
+        if (query_update.affectedRows === 0) {
+            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+        }
         if (req.session.currentUser) {
             req.session.destroy();
         }

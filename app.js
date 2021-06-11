@@ -1,6 +1,7 @@
 const path = require('path');
+
 /**
- * Express Module
+ * Modules
  */
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -46,11 +47,9 @@ let CachePokemonData = () => {
     });
 }
 
-
 /**
- * @ BEGIN EXPRESS FUNCTION
+ * @ MAIN FUNCTION
  */
-
 
 app
     .use(session({ secret: config.App_ID || process.env.App_ID, resave: false, saveUninitialized: true, cookie: { maxAge: 1000 * 60 * 60 } }))
@@ -80,13 +79,23 @@ app
         res.render('pages/index', { data : null })
     })
 
+    /**
+     * Routes
+     */
     .use('/api/', api)
     .use('/users/', user)
     .use('/admin',admin)
 
+    /**
+    * Error Handling
+    * */
+    .use((req, res, next) => {
+        return res.status(404).json({error : 404, message: "Not Found"})
+    })
+
+    /**
+     * Main Listener
+     */
     .listen(PORT, () => {
         console.log(`Listening on port ${PORT}`);
-        // Start discord client here
-        // bot.login(config.BOT_TOKEN);
-        // bot.destroy();
     });

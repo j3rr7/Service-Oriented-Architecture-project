@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
-
+const router = require('express').Router();
 const db = require('./database');
-const middleware_APIKEY = require('./middleware');
+const middlewares = require('./middleware');
 
 const midtransClient = require('midtrans-client');
 
@@ -43,7 +41,7 @@ router.get('/',  async (req, res) => {
     }
 })
 
-router.post('/Unsubscribe', middleware_APIKEY, async (req,res) =>{
+router.post('/Unsubscribe', middlewares.FETCH_APIKEY, async (req,res) =>{
     let idUser      = req.body.userId;
     let tipe        = 0;
 
@@ -69,7 +67,7 @@ router.post('/Unsubscribe', middleware_APIKEY, async (req,res) =>{
     }
 });
 
-router.get('/subscription', middleware_APIKEY, async (req,res) =>{
+router.get('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
     let idUser      = req.body.userId;
     let jenisSubs = "";
 
@@ -97,7 +95,7 @@ router.get('/subscription', middleware_APIKEY, async (req,res) =>{
     }
 });
 
-router.post('/subscription', middleware_APIKEY, async (req,res) =>{
+router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
     let userData =  req.USER_DATA;
     let buyPremorSupp = req.body.premsupp; // 1 for Premium , 2 For Support
 
@@ -148,47 +146,6 @@ router.post('/subscription', middleware_APIKEY, async (req,res) =>{
         });
 });
 
-router.post('/updateProfile', async (req,res) => {
-    let username    = req.body.username;
-    let phone       = req.body.phone;
-    let idUser      = req.body.userId;
-    let isNumPhone = /^\d+$/.test(phone);
-    
-    let connection = await db.connection();
-
-    if (isNumPhone) {
-        // ToDo Add Hashing
-        let query_update = await db.executeQuery(connection,`UPDATE users SET username = '${username}', phone = '${phone}' WHERE id = ${idUser}`);
-        if (query_update.affectedRows === 0) {
-            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
-        }
-        if (req.session.currentUser) {
-            req.session.destroy();
-        }
-
-        
-
-        let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
-        await db.release(connection);
-        req.session.currentUser = {
-            data : {
-                id          : query_user[0].id,
-                username    : query_user[0].username,
-                email       : query_user[0].email,
-                phone       : query_user[0].phone,
-                type        : query_user[0].type,
-                apiKey      : query_user[0].apiKey,
-                lastActive  : query_user[0].lastActive,
-                isBanned    : query_user[0].isbanned,
-                picture     : query_user[0].picture,
-            }
-        };
-        return res.status(201).json({ status : 201, message : "User Profile Updated" });
-    } else {
-        return res.status(400).json({ status : 400, message : "Phone number format is wrong" });
-    }
-})
-
 // just for supporter 
 
 // Get Super Custom Pokemon (GET) 
@@ -197,8 +154,6 @@ router.post('/updateProfile', async (req,res) => {
 
 // just for suporter 
 async function middlewareSupporter(req,res,next){
-
-
     if(req.session.currentUser == null){
         return res.status(403).send("Login First")
     }
@@ -239,7 +194,6 @@ router.get('/customPokemon',middlewareSupporter, async (req,res)=>{
     }
 
 });
-    
 router.post('/customPokemon',middlewareSupporter, async (req,res)=>{ 
     let user = req.user;
 

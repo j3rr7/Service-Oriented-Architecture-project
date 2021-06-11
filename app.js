@@ -11,11 +11,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 /**
- * Bot Module
- */
-const bot = require('./bot');
-
-/**
  * Load Configuration file inside root folder
  */
 const config = require('./config');
@@ -23,9 +18,9 @@ const config = require('./config');
 /**
  * Some Extra Variable to help / UTILS
  */
-const api = require('./api');
-const user = require('./user');
-const admin = require('./admin');
+const api = require('./routes/api');
+const user = require('./routes/user');
+const admin = require('./routes/admin');
 
 /**
  * Attempt to cache pokemon stats from rapidAPI

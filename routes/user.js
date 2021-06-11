@@ -101,27 +101,20 @@ router.post('/subscription', middleware_APIKEY, async (req,res) =>{
     let userData =  req.USER_DATA;
     let buyPremorSupp = req.body.premsupp; // 1 for Premium , 2 For Support
 
-    let snap = new midtransClient.Snap({
-        isProduction : false,
-        serverKey : 'SB-Mid-server-lG_QG_wufiOJpP0_ht0Wn29i',
-        clientKey : 'SB-Mid-client-Uc2OOrA47W4PE5zX'
-    });
+    // let snap = new midtransClient.Snap({
+    //     isProduction : false,
+    //     serverKey : 'SB-Mid-server-lG_QG_wufiOJpP0_ht0Wn29i',
+    //     clientKey : 'SB-Mid-client-Uc2OOrA47W4PE5zX'
+    // });
 
-    let parameter;
+    let harga;
  
     if(userData.type != 0){
         return res.status(400).json({ status : res.statusCode, message : "Already a Premium Account!" });
     }
     if(parseInt(buyPremorSupp) == 1)
     {
-        parameter = {
-            "transaction_details": {
-                "order_id": "test-transaction-123",
-                "gross_amount": 150000
-            }, "credit_card":{
-                "secure" : true
-            }
-        };    
+        parameter = 150000;    
     }
     else if(parseInt(buyPremorSupp) == 2)
     {
@@ -172,6 +165,8 @@ router.post('/updateProfile', async (req,res) => {
         if (req.session.currentUser) {
             req.session.destroy();
         }
+
+        
 
         let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
         await db.release(connection);
@@ -246,9 +241,6 @@ router.get('/customPokemon',middlewareSupporter, async (req,res)=>{
 });
     
 router.post('/customPokemon',middlewareSupporter, async (req,res)=>{ 
-    
-
-
     let user = req.user;
 
     let input  = req.body;

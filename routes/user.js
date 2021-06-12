@@ -80,7 +80,8 @@ router.get('/customPokemon',middlewareSupporter, async (req,res)=>{
             })
         }else{
             res.status(200).send({
-                pokemons : query
+                pokemons : query,
+                user:user
             })
         }
     }catch(ex){
@@ -131,7 +132,8 @@ router.post('/customPokemon',middlewareSupporter, async (req,res)=>{
             ${pokemon.status}
         )`)
         res.status(201).send({
-            message :"Pokemon Added"
+            message :"Pokemon Added",
+            pokemon : pokemon
         })
     }catch(ex){
         console.log(ex)
@@ -143,11 +145,20 @@ router.post('/customPokemon',middlewareSupporter, async (req,res)=>{
 router.delete('/customPokemon',middlewareSupporter, async (req,res)=>{ 
 
     let conn , query
-    let id = req.body.id_pokemon
+    let user  = req.user
 
+    let id = req.body.id_pokemon
+    if(!id){
+        return res.status(400).send("id_pokemon null")
+    }
     conn = await db.connection();
     query = await db.executeQuery(conn,`select * from custom_pokemon where id_pokemon = ${id}`)
     if(query[0]!=null){
+
+        if(user.id  != query[0].fk_users){
+            return res.status(400).send("Bukan pokemon anda")
+        }
+
         query = await db.executeQuery(conn,`delete from custom_pokemon where id_pokemon = ${id}`); 
         return res.status(200).send("Pokemon deleted")
     }else{

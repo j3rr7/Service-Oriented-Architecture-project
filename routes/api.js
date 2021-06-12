@@ -698,45 +698,55 @@ router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
     //     clientKey : 'SB-Mid-client-Uc2OOrA47W4PE5zX'
     // });
 
-    let harga;
-
-    if(userData.type != 0){
+    if(userData.type == 1){
         return res.status(400).json({ status : res.statusCode, message : "Already a Premium Account!" });
+    }else if(userData.type == 2){
+        return res.status(400).json({ status : res.statusCode, message : "Already a Supporter Account!" });
     }
+
     if(parseInt(buyPremorSupp) == 1)
     {
-        parameter = 150000;
+        let parameter = {
+            cost : "Rp. 150.000,00",
+            note : "You are now Premium user!"
+        };
+        let tipe = 1;
+
+        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe} WHERE id = ${userData.id}`);
+
+        if (query_update.affectedRows === 0) {
+            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+        }
+
+        return res.status(201).json({ 
+            status : res.statusCode, 
+            message : "Subscription Payment Success!",
+            data : parameter 
+        });
     }
     else if(parseInt(buyPremorSupp) == 2)
     {
-        parameter = {
-            "transaction_details": {
-                "order_id": "test-transaction-123",
-                "gross_amount": 750000
-            }, "credit_card":{
-                "secure" : true
-            }
+        let parameter = {
+            cost : "Rp. 750.000,00",
+            note : "You are now Supporter user!"
         };
+        let tipe = 2;
+
+        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe} WHERE id = ${userData.id}`);
+
+        if (query_update.affectedRows === 0) {
+            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+        }
+
+        return res.status(201).json({ 
+            status : res.statusCode, 
+            message : "Subscription Payment Success!",
+            data : parameter
+        });
     }
     else{
         return res.status(400).json({ status : res.statusCode, message : "Wrong Subscription Type Entry!" });
     }
-
-
-    snap.createTransaction(parameter)
-        .then((transaction)=>{
-            // transaction token
-            let transactionToken = transaction.token;
-            console.log('transactiondetail:',transaction);
-            console.log('transactionToken:',transactionToken);
-
-            // transaction redirect url
-            let transactionRedirectUrl = transaction.redirect_url;
-            console.log('transactionRedirectUrl:',transactionRedirectUrl);
-        })
-        .catch((e)=>{
-            console.log('Error occured:',e.message);
-        });
 });
 
 //endregion

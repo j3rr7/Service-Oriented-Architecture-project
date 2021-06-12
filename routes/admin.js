@@ -14,7 +14,6 @@ router.get('/users',async  (req, res) => {
     let id = req.query.id
 
 
-    
 
     if(id){
         conn = await db.connection()

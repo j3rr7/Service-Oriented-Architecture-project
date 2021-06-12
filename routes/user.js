@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
-
+const router = require('express').Router();
 const db = require('./database');
-const middleware_APIKEY = require('./middleware');
+const middlewares = require('./middleware');
 
 const midtransClient = require('midtrans-client');
 
@@ -42,153 +40,6 @@ router.get('/',  async (req, res) => {
         res.redirect('../')
     }
 })
-
-router.post('/Unsubscribe', middleware_APIKEY, async (req,res) =>{
-    let idUser      = req.body.userId;
-    let tipe        = 0;
-
-    let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
-    await db.release(connection);
-
-    if(query_user.length){
-        res.status(404).send({
-            message :"User Not Found!"
-        })
-    }
-    
-    if(query_user[0].isbanned == 0){
-        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe} WHERE id = ${idUser}`);
-        
-        if (query_update.affectedRows === 0) {
-            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
-        }
-
-        return res.status(201).json({ status : res.statusCode, message : "Unsubscribe Success!" });
-    }else{
-        return res.status(400).json({ status : res.statusCode, message : "User has been Banned!" });
-    }
-});
-
-router.get('/subscription', middleware_APIKEY, async (req,res) =>{
-    let idUser      = req.body.userId;
-    let jenisSubs = "";
-
-    let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
-    await db.release(connection);
-
-    if(query_user.length){
-        res.status(404).send({
-            message :"User Not Found!"
-        })
-    }
-    
-    if(query_user[0].isbanned == 0){
-        if(parseInt(query_user[0].type) == 0){
-            jenisSubs  = "Reguler";
-        }else if(parseInt(query_user[0].type) == 1){
-            jenisSubs  = "Premium";
-        }else if(parseInt(query_user[0].type) == 2){
-            jenisSubs  = "Supporter";
-        }
-    
-        return res.status(201).json({ status : res.statusCode, message : "You are a " + jenisSubs +" user!" });
-    }else{
-        return res.status(400).json({ status : res.statusCode, message : "User has been Banned!" });
-    }
-});
-
-router.post('/subscription', middleware_APIKEY, async (req,res) =>{
-    let userData =  req.USER_DATA;
-    let buyPremorSupp = req.body.premsupp; // 1 for Premium , 2 For Support
-
-    // let snap = new midtransClient.Snap({
-    //     isProduction : false,
-    //     serverKey : 'SB-Mid-server-lG_QG_wufiOJpP0_ht0Wn29i',
-    //     clientKey : 'SB-Mid-client-Uc2OOrA47W4PE5zX'
-    // });
-
-    let harga;
- 
-    if(userData.type != 0){
-        return res.status(400).json({ status : res.statusCode, message : "Already a Premium Account!" });
-    }
-    if(parseInt(buyPremorSupp) == 1)
-    {
-        parameter = 150000;    
-    }
-    else if(parseInt(buyPremorSupp) == 2)
-    {
-        parameter = {
-            "transaction_details": {
-                "order_id": "test-transaction-123",
-                "gross_amount": 750000
-            }, "credit_card":{
-                "secure" : true
-            }
-        };    
-    }
-    else{
-        return res.status(400).json({ status : res.statusCode, message : "Wrong Subscription Type Entry!" });
-    }
-
-   
-    snap.createTransaction(parameter)
-        .then((transaction)=>{
-            // transaction token
-            let transactionToken = transaction.token;
-            console.log('transactiondetail:',transaction);
-            console.log('transactionToken:',transactionToken);
-
-            // transaction redirect url
-            let transactionRedirectUrl = transaction.redirect_url;
-            console.log('transactionRedirectUrl:',transactionRedirectUrl);
-        })
-        .catch((e)=>{
-            console.log('Error occured:',e.message);
-        });
-});
-
-router.post('/updateProfile', async (req,res) => {
-    let username    = req.body.username;
-    let phone       = req.body.phone;
-    let idUser      = req.body.userId;
-    let isNumPhone = /^\d+$/.test(phone);
-    
-    let connection = await db.connection();
-
-    if (isNumPhone) {
-        // ToDo Add Hashing
-        let query_update = await db.executeQuery(connection,`UPDATE users SET username = '${username}', phone = '${phone}' WHERE id = ${idUser}`);
-        if (query_update.affectedRows === 0) {
-            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
-        }
-        if (req.session.currentUser) {
-            req.session.destroy();
-        }
-
-        
-
-        let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
-        await db.release(connection);
-        req.session.currentUser = {
-            data : {
-                id          : query_user[0].id,
-                username    : query_user[0].username,
-                email       : query_user[0].email,
-                phone       : query_user[0].phone,
-                type        : query_user[0].type,
-                apiKey      : query_user[0].apiKey,
-                lastActive  : query_user[0].lastActive,
-                isBanned    : query_user[0].isbanned,
-                picture     : query_user[0].picture,
-            }
-        };
-        return res.status(201).json({ status : 201, message : "User Profile Updated" });
-    } else {
-        return res.status(400).json({ status : 400, message : "Phone number format is wrong" });
-    }
-})
-
 // just for supporter 
 
 // Get Super Custom Pokemon (GET) 
@@ -197,8 +48,6 @@ router.post('/updateProfile', async (req,res) => {
 
 // just for suporter 
 async function middlewareSupporter(req,res,next){
-
-
     if(req.session.currentUser == null){
         return res.status(403).send("Login First")
     }
@@ -240,7 +89,6 @@ router.get('/customPokemon',middlewareSupporter, async (req,res)=>{
     }
 
 });
-    
 router.post('/customPokemon',middlewareSupporter, async (req,res)=>{ 
     let user = req.user;
 

@@ -29,4 +29,7 @@ async function Middleware_APIKEY_FETCH( req, res, next ) {
     next();
 }
 
-module.exports= Middleware_APIKEY_FETCH;
+module.exports = {
+    FETCH_APIKEY : Middleware_APIKEY_FETCH,
+
+};

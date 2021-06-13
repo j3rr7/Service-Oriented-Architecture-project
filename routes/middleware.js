@@ -26,6 +26,7 @@ async function Middleware_APIKEY_FETCH( req, res, next ) {
 
     await db.release(connection);
     req.USER_DATA = query_user[0];
+    req.user = query_user[0];
     next();
 }
 

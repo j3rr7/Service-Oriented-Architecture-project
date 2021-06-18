@@ -64,6 +64,7 @@ router.post('/signup', async (req, res) => {
                     username : username,
                     email : email,
                     phone : phone,
+                    password : password,
                     apiKey: apiKey
                 }
             });
@@ -114,7 +115,8 @@ router.post('/signin', async (req, res) => {
         return res.status(200).json({ 
             status : res.statusCode,
             message: "User Logged in",
-            apiKey : query_user[0].apiKey
+            apiKey : query_user[0].apiKey,
+            user :   query_user[0]
         });
     }
     return res.status(400).json({ status : 400 , message: "Wrong Password"});
@@ -841,6 +843,16 @@ router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
     }
 });
 
+router.delete('/dummyDelete',async (req,res)=>{
+    let email = req.body.email
+    
+    let conn = await db.connection();
+    let exe = await db.executeQuery(conn,`delete from users where email =  '${email}'`);
+    return res.status(200).json({
+        email : email,
+        msg :`${email} deleted`
+    })
+})
 //endregion
 //#endregion
 

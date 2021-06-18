@@ -48,6 +48,7 @@ router.get('/',  async (req, res) => {
 
 // just for suporter 
 async function middlewareSupporter(req,res,next){
+
     if(req.session.currentUser == null){
         return res.status(403).send("Login First")
     }
@@ -67,10 +68,12 @@ var dummyUsers = {
     id :4,
     type :2
 }
-router.get('/customPokemon',middlewareSupporter, async (req,res)=>{ 
+router.get('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{ 
 
     let user = req.user
-
+    if(user.type !== 2){
+        return res.status(402).send("Not Authorized")
+    }
     try{
         let conn = await db.connection();
         let query = await db.executeQuery(conn,`select * from custom_pokemon where fk_users = ${user.id}`)
@@ -89,8 +92,11 @@ router.get('/customPokemon',middlewareSupporter, async (req,res)=>{
     }
 
 });
-router.post('/customPokemon',middlewareSupporter, async (req,res)=>{ 
-    let user = req.user;
+router.post('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{ 
+    let user = req.user
+    if(user.type !== 2){
+        return res.status(402).send("Not Authorized")
+    }
 
     let input  = req.body;
     let nama = input.nama_pokemon
@@ -103,6 +109,7 @@ router.post('/customPokemon',middlewareSupporter, async (req,res)=>{
 
 
     let pokemon = {
+        id_pokemon : input.id_pokemon ? input.id_pokemon : null,
         nama_pokemon :input.nama_pokemon,
         nature :input.nature,
         base_attack : input.base_attack,
@@ -114,6 +121,7 @@ router.post('/customPokemon',middlewareSupporter, async (req,res)=>{
     try{
         let conn = await db.connection();
         let query = await db.executeQuery(conn,`insert into custom_pokemon (
+            id_pokemon,
             nama_pokemon,
             nature,
             base_attack,
@@ -123,6 +131,7 @@ router.post('/customPokemon',middlewareSupporter, async (req,res)=>{
             status
         )
         values(
+            ${pokemon.id_pokemon},
             '${pokemon.nama_pokemon}',
             '${pokemon.nature}',
             ${pokemon.base_attack},
@@ -142,10 +151,14 @@ router.post('/customPokemon',middlewareSupporter, async (req,res)=>{
     
 
 });
-router.delete('/customPokemon',middlewareSupporter, async (req,res)=>{ 
+router.delete('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{ 
 
     let conn , query
-    let user  = req.user
+    
+    let user = req.user
+    if(user.type !== 2){
+        return res.status(402).send("Not Authorized")
+    }
 
     let id = req.body.id_pokemon
     if(!id){
@@ -154,13 +167,16 @@ router.delete('/customPokemon',middlewareSupporter, async (req,res)=>{
     conn = await db.connection();
     query = await db.executeQuery(conn,`select * from custom_pokemon where id_pokemon = ${id}`)
     if(query[0]!=null){
-
+        let pokemon = query[0]
         if(user.id  != query[0].fk_users){
             return res.status(400).send("Bukan pokemon anda")
         }
 
         query = await db.executeQuery(conn,`delete from custom_pokemon where id_pokemon = ${id}`); 
-        return res.status(200).send("Pokemon deleted")
+        return res.status(200).send({
+            message : "pokemon deleted",
+            pokemon : pokemon
+        })
     }else{
         return res.status(404).send("Pokemon not found");
     }

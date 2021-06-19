@@ -4,10 +4,6 @@ const middlewares = require('./middleware');
 
 const midtransClient = require('midtrans-client');
 
-router.get('/test',(req,res)=>{
-    return res.send("iki test")
-})
-
 // Create Snap API instance
 // Home page user route.
 

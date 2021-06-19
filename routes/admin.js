@@ -109,6 +109,4 @@ router.put('/unban',middlewares.FETCH_APIKEY, async(req,res)=>{
     res.status(400).send("id tidak ditemukan")
 })
 
-
-
 module.exports = router

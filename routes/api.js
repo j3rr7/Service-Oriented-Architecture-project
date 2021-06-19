@@ -2,6 +2,7 @@ const fs = require('fs');
 const router = require('express').Router();
 const axios = require('axios');
 const db = require('./database');
+const midtransClient = require('midtrans-client');
 const middlewares =  require('./middleware');
 const utils = require('./utils');
 
@@ -541,6 +542,7 @@ router.delete('/pokemon', middlewares.FETCH_APIKEY, async (req,res)=>{
 //region MULTER API
 const multer = require('multer');
 const e = require('express');
+const { Console } = require('console');
 const storage = multer.diskStorage({
     destination: function(req,file,callback){
         callback(null,'./public/uploads');
@@ -767,61 +769,122 @@ router.get('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
 
 router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
     let userData =  req.USER_DATA;
+
+    // Untuk midtrans
+    let midtransCore = new midtransClient.CoreApi({
+        isProduction : false,
+        serverKey : 'SB-Mid-server-lG_QG_wufiOJpP0_ht0Wn29i',
+        clientKey : 'SB-Mid-client-Uc2OOrA47W4PE5zX'
+    });
+    //
     let buyPremorSupp = req.body.premsupp; // 1 for Premium , 2 For Support
 
-    // let snap = new midtransClient.Snap({
-    //     isProduction : false,
-    //     serverKey : 'SB-Mid-server-lG_QG_wufiOJpP0_ht0Wn29i',
-    //     clientKey : 'SB-Mid-client-Uc2OOrA47W4PE5zX'
-    // });
+    const card = {
+        "card_number" : req.body.card_number, //'5264 2210 3887 4659'
+        "card_exp_month" : req.body.card_exp_month,// '12'
+        "card_exp_year" : req.body.card_exp_year,// '2025'
+        "card_cvv" : req.body.card_cvv, //'123'
+        "client_key" : midtransCore.apiConfig.clientKey
+    };
+
+    const cardToken =  await midtransCore.cardToken(card);
+
+    let date = new Date().getFullYear() + "_" + (new Date().getMonth()+1) + "_" + new Date().getDay()
+    
+    let parameter = "";
 
     let connection = await db.connection();
-    
 
     if(parseInt(buyPremorSupp) == 1 && userData.type < 1)
     {
-        let parameter = {
-            cost : "Rp. 150.000,00",
-            note : "You are now Premium user!"
+        parameter = {
+            "payment_type": "credit_card",
+            "transaction_details": {
+                "gross_amount": 150000,
+                "order_id": "TR" + date,
+            },
+            "credit_card":{
+                "token_id": cardToken.token_id,
+            }
         };
-        let tipe = 1;
 
-        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe}, lastActive = now() WHERE id = ${userData.id}`);
+        const chargeResponse =  await midtransCore.charge(parameter);
 
-        if (query_update.affectedRows === 0) {
-            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+        if(chargeResponse.fraud_status == "accept"){
+            let tipe = 1;
+            let dataResponse = {
+                "status message" : chargeResponse.status_message,
+                "transaction_id" : chargeResponse.transaction_id,
+                "order_id" : chargeResponse.order_id,
+                "bank" : chargeResponse.bank,
+                "amount" : chargeResponse.currency + ". " + chargeResponse.gross_amount,
+                "transaction_time" : chargeResponse.transaction_time,
+                "card_type" : chargeResponse.card_type
+            }
+            let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe}, lastActive = now() WHERE id = ${userData.id}`);
+    
+            if (query_update.affectedRows === 0) {
+                return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+            }
+
+            return res.status(200).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Success!",
+                data : dataResponse
+            });
+        }else{
+            return res.status(400).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Failed!"
+            });
         }
-        await db.release(connection);
-
-        return res.status(200).json({ 
-            status : res.statusCode, 
-            message : "Subscription Payment Success!",
-            data : parameter 
-        });
     }else if (parseInt(buyPremorSupp) === 1 && userData.type === 1){
         return res.status(400).json({ status : res.statusCode, message : "Already a Premium Account!" });
     }
     
     if(parseInt(buyPremorSupp) == 2 && userData.type < 2)
     {
-        let parameter = {
-            cost : "Rp. 750.000,00",
-            note : "You are now Supporter user!"
+        parameter = {
+            "payment_type": "credit_card",
+            "transaction_details": {
+                "gross_amount": 750000,
+                "order_id": "TR" + date,
+            },
+            "credit_card":{
+                "token_id": cardToken.token_id,
+            }
         };
-        let tipe = 2;
 
-        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe}, lastActive = now() WHERE id = ${userData.id}`);
+        const chargeResponse =  await midtransCore.charge(parameter);
 
-        if (query_update.affectedRows === 0) {
-            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+        if(chargeResponse.fraud_status == "accept"){
+            let tipe = 2;
+            let dataResponse = {
+                "status message" : chargeResponse.status_message,
+                "transaction_id" : chargeResponse.transaction_id,
+                "order_id" : chargeResponse.order_id,
+                "bank" : chargeResponse.bank,
+                "amount" : chargeResponse.currency + ". " + chargeResponse.gross_amount,
+                "transaction_time" : chargeResponse.transaction_time,
+                "card_type" : chargeResponse.card_type
+            }
+            let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe}, lastActive = now() WHERE id = ${userData.id}`);
+
+            if (query_update.affectedRows === 0) {
+                return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+            }
+
+            return res.status(200).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Success!",
+                data : dataResponse
+            });
+        }else{
+            return res.status(400).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Failed!"
+            });
         }
-        
-
-        return res.status(200).json({ 
-            status : res.statusCode, 
-            message : "Subscription Payment Success!",
-            data : parameter
-        });
     }else if (parseInt(buyPremorSupp) === 2 && userData.type === 2){
         return res.status(400).json({ status : res.statusCode, message : "Already a Supporter Account!" });
     }

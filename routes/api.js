@@ -640,7 +640,7 @@ router.put('/profile/update', middlewares.FETCH_APIKEY, async (req,res) => {
 })
 
 router.post('/Unsubscribe', middlewares.FETCH_APIKEY, async (req,res) =>{
-    let idUser      = req.body.userId;
+    let idUser      = req.USER_DATA.id;
     let tipe        = 0;
 
     let connection = await db.connection();
@@ -662,7 +662,7 @@ router.post('/Unsubscribe', middlewares.FETCH_APIKEY, async (req,res) =>{
         }
         await db.release(connection);
 
-        return res.status(201).json({ status : res.statusCode, message : "Unsubscribe Success!" });
+        return res.status(200).json({ status : res.statusCode, message : "Unsubscribe Success!" });
     }else{
         return res.status(400).json({ status : res.statusCode, message : "User has been Banned!" });
     }

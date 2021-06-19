@@ -1,13 +1,21 @@
 const router = require('express').Router();
 const db = require('./database');
+const middlewares = require('./middleware')
 
 var conn , query;
 
 // Home page user route.
 
 //admin/users
-router.get('/users',async  (req, res) => {
+router.get('/users',middlewares.FETCH_APIKEY ,  async  (req, res) => {
     // res.status(403).send('ADmin HOme Page');
+
+
+    let user = req.user
+
+    if(user.type !== -1){
+        return res.status(403).send("Not authorized,  Admin only")
+    }
 
     let username = req.query.username 
     let id = req.query.id
@@ -19,7 +27,7 @@ router.get('/users',async  (req, res) => {
         query = await db.executeQuery(conn,
             `select * from users where id = ${id}`)
         await conn.release();
-        res.status(200).send(query)
+        res.status(200).send(query[0])
     }else if (username){
         conn = await db.connection()
         query = await db.executeQuery(conn,
@@ -36,7 +44,15 @@ router.get('/users',async  (req, res) => {
 
 })
 
-router.put('/ban',async(req,res)=>{
+router.put('/ban',middlewares.FETCH_APIKEY, async(req,res)=>{
+    
+
+    let user = req.user
+
+    if(user.type !== -1){
+        return res.status(403).send("Not authorized,  Admin only")
+    }
+
     let id = req.body.id
     // res.status(200).send("masok");
     if(id){
@@ -64,8 +80,16 @@ router.put('/ban',async(req,res)=>{
     res.status(400).send("id tidak ditemukan ditemukan")
 })
 
-router.put('/unban',async(req,res)=>{
+router.put('/unban',middlewares.FETCH_APIKEY, async(req,res)=>{
     let id = req.body.id
+    
+
+    let user = req.user
+
+    if(user.type !== -1){
+        return res.status(403).send("Not authorized,  Admin only")
+    }
+
     if(id){
         conn = await  db.connection()
         query = await db.executeQuery(conn,`select * from users where id ='${id}' `)
@@ -86,8 +110,5 @@ router.put('/unban',async(req,res)=>{
 })
 
 
-router.get('/search',async (req,res)=>{
-    
-})
 
 module.exports = router

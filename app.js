@@ -7,6 +7,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const favicon = require('serve-favicon');
 const session = require('express-session');
+const utils = require('./routes/utils');
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -50,6 +51,13 @@ let CachePokemonData = () => {
 /**
  * @ MAIN FUNCTION
  */
+
+app.get('/getAPI',function(req,res){
+    let apiKey = utils.GenerateApiKey(32)
+    return res.send(apiKey)
+})
+
+
 
 app
     .use(session({ secret: config.App_ID || process.env.App_ID, resave: false, saveUninitialized: true, cookie: { maxAge: 1000 * 60 * 60 } }))

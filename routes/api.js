@@ -442,24 +442,77 @@ router.get('/pokemon/random', async (req, res) => {
     }
 })
 
-// get custom pokemon
-router.post('/pokemon', async (req,res)=>{
-    let conn = await  db.connection()
-    let query = await db.executeQuery(conn,`SELECT * FROM custom_pokemon WHERE status = '1'`)
-    await db.release(conn); // destroy the connection
-    res.status(200).send(query)
+// add custom pokemon
+router.post('/pokemon',middlewares.FETCH_APIKEY ,async (req,res)=>{
+    let user = req.user
+
+    if(user.type !== 1){
+        return res.status(402).send("Not Authorized")
+    }
+
+    let input  = req.body;
+    let nama = input.nama_pokemon
+    let nature = input.nature 
+    let base_attack  = input.base_attack
+    let base_defend = input.base_defend
+    let base_hp = input.base_hp 
+    let fk_user = user.id //pengen e dapet dari API
+    let status = 1; // just for Premium
+
+
+    let pokemon = {
+        id_pokemon : input.id_pokemon ? input.id_pokemon : null,
+        nama_pokemon :input.nama_pokemon,
+        nature :input.nature,
+        base_attack : input.base_attack,
+        base_defend : input.base_defend,
+        base_hp : input.base_hp,
+        fk_users : fk_user,
+        status :status
+    }
+    try{
+        let conn = await db.connection();
+        let query = await db.executeQuery(conn,`insert into custom_pokemon (
+            id_pokemon,
+            nama_pokemon,
+            nature,
+            base_attack,
+            base_defend,
+            base_hp,
+            fk_users,
+            status
+        )
+        values(
+            ${pokemon.id_pokemon},
+            '${pokemon.nama_pokemon}',
+            '${pokemon.nature}',
+            ${pokemon.base_attack},
+            ${pokemon.base_defend},
+            ${pokemon.base_hp},
+            ${pokemon.fk_users},
+            ${pokemon.status}
+        )`)
+        res.status(201).send({
+            message :"Pokemon Added",
+            pokemon : pokemon
+        })
+    }catch(ex){
+        console.log(ex)
+        return res.status(500).send("Error DB")
+    }
 })
 
 // delete custom pokemon
 router.delete('/pokemon', middlewares.FETCH_APIKEY, async (req,res)=>{
     // storing user data for later
-    let USER_DATA = req.USER_DATA;
+    let USER_DATA = req.user
 
     let id = req.body.id
     let conn = await db.connection()
     let query = await db.executeQuery(conn,`SELECT * FROM custom_pokemon WHERE id_pokemon = '${id}'`)
     let pokemon = query[0]
 
+    
     if (USER_DATA.type !== 1 && pokemon.fk_users !== USER_DATA.id){
         return res.status(401).json({
             status: res.statusCode,
@@ -788,6 +841,16 @@ router.delete('/dummyDelete',async (req,res)=>{
     return res.status(200).json({
         email : email,
         msg :`${email} deleted`
+    })
+})
+
+router.delete('/dummyDeletePokemon',async (req,res)=>{
+    let id_pokemon = req.body.id_pokemon
+    
+    let conn = await db.connection();
+    let exe = await db.executeQuery(conn,`delete from custom_pokemon where id_pokemon =  '${id_pokemon}'`);
+    return res.status(200).json({
+        msg :`${id_pokemon} deleted`
     })
 })
 //endregion

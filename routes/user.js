@@ -88,6 +88,7 @@ router.get('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{
     }
 
 });
+
 router.post('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{ 
     let user = req.user
     if(user.type !== 2){
@@ -147,6 +148,7 @@ router.post('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{
     
 
 });
+
 router.delete('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{ 
 
     let conn , query
@@ -176,9 +178,64 @@ router.delete('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{
     }else{
         return res.status(404).send("Pokemon not found");
     }
-
-
-
 });
+
+router.put('/customPokemon',middlewares.FETCH_APIKEY, async (req,res)=>{ 
+
+    let conn , query
+    
+    let user = req.user
+    if(user.type !== 2){
+        return res.status(402).send("Not Authorized")
+    }
+
+    let id = req.body.id_pokemon
+    let nama = req.body.nama_pokemon
+    let nature = req.body.nature
+    let base_attack = req.body.base_attack
+    let base_defend = req.body.base_defend
+    let base_hp = req.body.base_hp
+    let status = 2; // just for supporter
+
+    let pokemon = {
+        id_pokemon : id,
+        nama_pokemon : nama,
+        nature : nature,
+        base_attack : base_attack,
+        base_defend : base_defend,
+        base_hp : base_hp,
+        fk_users : user.type,
+        status :status
+    }
+    if(!id){
+        return res.status(400).send("id_pokemon null")
+    }
+    conn = await db.connection();
+    query = await db.executeQuery(conn,`select * from custom_pokemon where id_pokemon = ${id}`)
+    if(query[0]!=null){
+        let pokemon = query[0]
+        if(user.id  != query[0].fk_users){
+            return res.status(400).send("Bukan pokemon anda")
+        }
+
+        query = await db.executeQuery(conn,`
+        update custom_pokemon 
+        set nama_pokemon = '${nama}',
+        nature = '${nature}',
+        base_attack = '${base_attack}',
+        base_defend = '${base_defend}',
+        base_hp = '${base_hp}'
+        where id_pokemon = ${id}`); 
+        return res.status(200).send({
+            message : "pokemon updated",
+            pokemon : pokemon 
+        })
+    }else{
+        return res.status(404).send("Pokemon not found");
+    }
+});
+
+
+
 
 module.exports = router

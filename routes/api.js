@@ -6,6 +6,12 @@ const midtransClient = require('midtrans-client');
 const middlewares =  require('./middleware');
 const utils = require('./utils');
 
+// jangann diganti=============================================
+const accountSid = "AC3e1e027ca521a2f9a7365346e012d7f9";    //
+const authToken = '32e3cc3b1429461ef3d01d418a793815';       //
+const nomorTwilio = '+14012932295';                         //
+const client = require('twilio')(accountSid, authToken);    //
+//=============================================================
 /**
  * BEGIN API ROUTES
  */
@@ -543,6 +549,7 @@ router.delete('/pokemon', middlewares.FETCH_APIKEY, async (req,res)=>{
 const multer = require('multer');
 const e = require('express');
 const { Console } = require('console');
+const middleware = require('./middleware');
 const storage = multer.diskStorage({
     destination: function(req,file,callback){
         callback(null,'./public/uploads');
@@ -918,5 +925,50 @@ router.delete('/dummyDeletePokemon',async (req,res)=>{
 })
 //endregion
 //#endregion
+
+
+
+router.get("/forgetAPI", async (req,res)=>{
+
+    // let user = req.user;
+    let notelp = req.body.notelp;
+    if(!notelp){
+        return res.status(400).send("Nomor telepon kosong")
+    }
+
+    let conn = await db.connection()
+    let query= await db.executeQuery(conn,`select * from users where phone = '${notelp}'`)
+    if(query[0] ==null){
+        return res.status(404).send("Nomor telepon tidak ditemukan")
+    }
+
+    let user = query[0]
+    let phone = '+'+query[0].phone
+    let isiSMS =`Pesan dari POKEDIS  \n   Apikey : ${user.apiKey} `
+
+    // tolong diuncoment kalo mau make , tiap make mbayar soal
+    try{
+
+        return res.status(200).send("SMS sent")
+        // client.messages
+        // .create({
+        //    body: isiSMS,
+        //    from: nomorTwilio,
+        //    to: phone,
+        //   //  to: '+14053747262 '  // nomor e jeremy,
+        //  })
+        // .then(message => {
+        //        console.log(message.sid) ;
+        //        return res.send(message)
+        //   })
+        
+  
+    }catch(ex){
+        return res.status(500).send("Internal Server Error")
+    }
+  
+     
+   
+})
 
 module.exports = router;

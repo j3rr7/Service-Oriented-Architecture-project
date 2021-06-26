@@ -69,12 +69,6 @@ router.put('/ban',middlewares.FETCH_APIKEY, async(req,res)=>{
                 nama : user.username,
                 email : user.email,
             })
-        }else{
-            query = await db.executeQuery(conn,`update users set isbanned = 0 where id = ${id}`)
-            res.status(200).json({
-                nama : user.username,
-                email : user.email
-            })
         }
     }
     res.status(400).send("id tidak ditemukan ditemukan")
@@ -82,7 +76,6 @@ router.put('/ban',middlewares.FETCH_APIKEY, async(req,res)=>{
 
 router.put('/unban',middlewares.FETCH_APIKEY, async(req,res)=>{
     let id = req.body.id
-    
 
     let user = req.user
 
@@ -96,11 +89,12 @@ router.put('/unban',middlewares.FETCH_APIKEY, async(req,res)=>{
         let user = query[0];
         if(user == null){
             return res.status(404).send("user tidak ditemukan");
-        }else if (user.isbanned == 0){
+        }
+        if (user.isbanned == 0){
             return res.status(400).send("user sudah di unban")
         }
 
-        query = await db.executeQuery(conn,`update users set isbanned = 0 where id = ${id}`)
+        query = await db.executeQuery(conn,`update users set isbanned = 1 where id = ${id}`)
         res.status(200).json({
             nama : user.username,
             email : user.email

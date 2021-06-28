@@ -198,7 +198,8 @@ router.post('/battle', middlewares.FETCH_APIKEY, async (req, res) => {
         if (err instanceof SyntaxError) {
             await db.release(connection);
             return res.status(400).json({
-                status : "Data Error! check your p1 or p2 syntax"
+                status : res.statusCode,
+                message : "Data Error! check your p1 or p2 syntax"
             });
         }
     }
@@ -366,7 +367,11 @@ router.post('/battle/history', middlewares.FETCH_APIKEY, async (req, res) => {
     await db.release(connection); // destroy the connection
     return res.status(200).json({
         battle_id : battle_id,
-        history : battle_data_detail
+        history : battle_data_detail,
+        pokemon : {
+            p1: JSON.parse(battle_query[0].p1),
+            p2: JSON.parse(battle_query[0].p2),
+        }
     })
 })
 
@@ -377,20 +382,33 @@ router.post('/battle/end', middlewares.FETCH_APIKEY, async (req, res) => {
 
     let battle_id = req.body.battle_id;
     if (!battle_id) {
-        return res.status(400).json({ status : res.statusCode , message: "Battle id is missing"});
+        return res.status(400).json({status: res.statusCode, message: "Battle id is missing"});
     }
 
     let connection = await db.connection();
 
-    await db.executeQuery(connection,
+    let battle_data = await db.executeQuery(connection, `SELECT * FROM battle_session WHERE battle_id = :bt_id`, {bt_id: battle_id})
+
+    if (battle_data.length < 1) {
+        return res.status(404).json({status: res.statusCode, message: "Battle id not found"});
+    }
+
+    if (battle_data[0].user_id !== USER_DATA.id) {
+        return res.status(401).json({status: res.statusCode, message: "Action Unauthorized"});
+    }
+
+    let update_query = await db.executeQuery(connection,
         `UPDATE battle_session SET status = 1 WHERE battle_id = '${battle_id}'`)
+
+    if (update_query.changedRows < 1){
+        return res.status(400).json({status: res.statusCode, message: "Battle already ended"});
+    }
 
     let string_action = "Battle Ended, ";
 
     if (req.body.reason) {
         string_action += req.body.reason;
-    }
-    else {
+    } else {
         string_action = "Battle abruptly ended";
     }
 
@@ -399,8 +417,12 @@ router.post('/battle/end', middlewares.FETCH_APIKEY, async (req, res) => {
 
     await db.release(connection); // destroy the connection
     return res.status(200).json({
-        status : res.statusCode,
-        reason : string_action
+        status: res.statusCode,
+        reason: string_action,
+        pokemon: {
+            p1: JSON.parse(battle_data[0].p1),
+            p2: JSON.parse(battle_data[0].p2)
+        }
     })
 })
 

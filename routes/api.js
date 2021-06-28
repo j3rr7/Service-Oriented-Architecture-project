@@ -656,6 +656,28 @@ router.post('/profile/upload', middlewares.FETCH_APIKEY, (req, res) => {
     }
 })
 
+//Temp Buat coding session
+    // if (req.session.currentUser) {
+    //     req.session.destroy();
+    // }
+
+    // let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
+    // await db.release(connection);
+    // req.session.currentUser = {
+    //     data : {
+    //         id          : query_user[0].id,
+    //         username    : query_user[0].username,
+    //         email       : query_user[0].email,
+    //         phone       : query_user[0].phone,
+    //         type        : query_user[0].type,
+    //         apiKey      : query_user[0].apiKey,
+    //         lastActive  : query_user[0].lastActive,
+    //         isBanned    : query_user[0].isbanned,
+    //         picture     : query_user[0].picture,
+    //     }
+    // };
+//end
+
 router.put('/profile/update', middlewares.FETCH_APIKEY, async (req,res) => {
     // storing user data for later
     let USER_DATA = req.USER_DATA;
@@ -673,25 +695,7 @@ router.put('/profile/update', middlewares.FETCH_APIKEY, async (req,res) => {
         if (query_update.affectedRows === 0) {
             return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
         }
-        if (req.session.currentUser) {
-            req.session.destroy();
-        }
 
-        let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
-        await db.release(connection);
-        req.session.currentUser = {
-            data : {
-                id          : query_user[0].id,
-                username    : query_user[0].username,
-                email       : query_user[0].email,
-                phone       : query_user[0].phone,
-                type        : query_user[0].type,
-                apiKey      : query_user[0].apiKey,
-                lastActive  : query_user[0].lastActive,
-                isBanned    : query_user[0].isbanned,
-                picture     : query_user[0].picture,
-            }
-        };
         return res.status(201).json({ status : 201, message : "User Profile Updated" });
     } else {
         await db.release(connection);
@@ -700,65 +704,50 @@ router.put('/profile/update', middlewares.FETCH_APIKEY, async (req,res) => {
 })
 
 router.post('/Unsubscribe', middlewares.FETCH_APIKEY, async (req,res) =>{
+    let userData    = req.USER_DATA;
     let idUser      = req.USER_DATA.id;
     let tipe        = 0;
 
     let connection = await db.connection();
+    
+    if(userData.isbanned == 0){
+        if(userData.type == 0){
+            return res.status(400).json({ status : res.statusCode, message : "Already a Reguler User!" });
+        }else{
+            let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe} WHERE id = ${idUser}`);
 
-    let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
-    await db.release(connection);
+            if (query_update.affectedRows === 0) {
+                return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+            }
+            await db.release(connection);
 
-    if(query_user.length){
-        res.status(404).send({
-            message :"User Not Found!"
-        })
-    }
-
-    if(query_user[0].isbanned == 0){
-        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe} WHERE id = ${idUser}`);
-
-        if (query_update.affectedRows === 0) {
-            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+            return res.status(200).json({ status : res.statusCode, message : "Unsubscribe Success!" });
         }
-        await db.release(connection);
-
-        return res.status(200).json({ status : res.statusCode, message : "Unsubscribe Success!" });
     }else{
         return res.status(400).json({ status : res.statusCode, message : "User has been Banned!" });
     }
 });
 
 router.get('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
-    let idUser =req.USER_DATA.id;
+    let userData    = req.USER_DATA;
     let jenisSubs = "";
 
-    let connection = await db.connection();
-
-    let query_user = await db.executeQuery(connection,`SELECT * FROM users WHERE id = ${idUser}`);
-    await db.release(connection);
-
-    if(query_user.length < 1){
-        return res.status(404).send({
-            message :"User Not Found!"
-        })
-    }
-
-    if(query_user[0].isbanned == 0){
-        let dateBuy = new Date(query_user[0].lastActive);
+    if(userData.isbanned == 0){
+        let dateBuy = new Date(userData.lastActive);
 
         dateBuy.setDate(dateBuy.getDate() + 30);
         
-        if(parseInt(query_user[0].type) == 0){
+        if(parseInt(userData.type) == 0){
             jenisSubs  =  {
                 Status : "Reguler User",
                 Subscription : null
             };
-        }else if(parseInt(query_user[0].type) == 1){
+        }else if(parseInt(userData.type) == 1){
             jenisSubs  =  {
                 Status : "Premium User",
                 Subscription : "Valid Until " + dateBuy.toUTCString()
             };
-        }else if(parseInt(query_user[0].type) == 2){
+        }else if(parseInt(userData.type) == 2){
             jenisSubs  =  {
                 Status : "Supporter User",
                 Subscription : "Valid Until " + dateBuy.toUTCString()
@@ -798,6 +787,11 @@ router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
 
     let date = new Date().getFullYear() + "_" + (new Date().getMonth()+1) + "_" + new Date().getDay()
     
+    let dateBuy = new Date(userData.lastActive);
+    let dateNow = new Date();
+
+    dateBuy.setDate(dateBuy.getDate() + 30);
+
     let parameter = "";
 
     let connection = await db.connection();
@@ -808,7 +802,7 @@ router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
             "payment_type": "credit_card",
             "transaction_details": {
                 "gross_amount": 150000,
-                "order_id": "TR" + date,
+                "order_id": utils.GenerateApiKey(6),
             },
             "credit_card":{
                 "token_id": cardToken.token_id,
@@ -845,17 +839,66 @@ router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
                 message : "Subscription Payment Failed!"
             });
         }
-    }else if (parseInt(buyPremorSupp) === 1 && userData.type === 1){
-        return res.status(400).json({ status : res.statusCode, message : "Already a Premium Account!" });
     }
     
+    if(parseInt(buyPremorSupp) === 1 && userData.type === 1 && dateNow >= dateBuy)
+    {
+        parameter = {
+            "payment_type": "credit_card",
+            "transaction_details": {
+                "gross_amount": 150000,
+                "order_id": utils.GenerateApiKey(6),
+            },
+            "credit_card":{
+                "token_id": cardToken.token_id,
+            }
+        };
+
+        const chargeResponse =  await midtransCore.charge(parameter);
+
+        if(chargeResponse.fraud_status == "accept"){
+            let tipe = 1;
+            let dataResponse = {
+                "status message" : chargeResponse.status_message,
+                "transaction_id" : chargeResponse.transaction_id,
+                "order_id" : chargeResponse.order_id,
+                "bank" : chargeResponse.bank,
+                "amount" : chargeResponse.currency + ". " + chargeResponse.gross_amount,
+                "transaction_time" : chargeResponse.transaction_time,
+                "card_type" : chargeResponse.card_type
+            }
+            let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe}, lastActive = now() WHERE id = ${userData.id}`);
+    
+            if (query_update.affectedRows === 0) {
+                return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+            }
+
+            return res.status(200).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Success!",
+                data : dataResponse
+            });
+        }else{
+            return res.status(400).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Failed!"
+            });
+        }
+    }else if(parseInt(buyPremorSupp) === 1 && userData.type === 1 && dateNow < dateBuy){
+
+        return res.status(400).json({ 
+            status : res.statusCode, 
+            message : "You Already Pay the Subscription!"
+        });
+    }
+
     if(parseInt(buyPremorSupp) == 2 && userData.type < 2)
     {
         parameter = {
             "payment_type": "credit_card",
             "transaction_details": {
                 "gross_amount": 750000,
-                "order_id": "TR" + date,
+                "order_id": utils.GenerateApiKey(6),
             },
             "credit_card":{
                 "token_id": cardToken.token_id,
@@ -892,8 +935,63 @@ router.post('/subscription', middlewares.FETCH_APIKEY, async (req,res) =>{
                 message : "Subscription Payment Failed!"
             });
         }
-    }else if (parseInt(buyPremorSupp) === 2 && userData.type === 2){
-        return res.status(400).json({ status : res.statusCode, message : "Already a Supporter Account!" });
+    }
+    
+    if(parseInt(buyPremorSupp) === 2 && userData.type === 2 && dateNow >= dateBuy)
+    {
+        parameter = {
+            "payment_type": "credit_card",
+            "transaction_details": {
+                "gross_amount": 750000,
+                "order_id": utils.GenerateApiKey(6),
+            },
+            "credit_card":{
+                "token_id": cardToken.token_id,
+            }
+        };
+
+        const chargeResponse =  await midtransCore.charge(parameter);
+
+        if(chargeResponse.fraud_status == "accept"){
+            let tipe = 2;
+            let dataResponse = {
+                "status message" : chargeResponse.status_message,
+                "transaction_id" : chargeResponse.transaction_id,
+                "order_id" : chargeResponse.order_id,
+                "bank" : chargeResponse.bank,
+                "amount" : chargeResponse.currency + ". " + chargeResponse.gross_amount,
+                "transaction_time" : chargeResponse.transaction_time,
+                "card_type" : chargeResponse.card_type
+            }
+            let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe}, lastActive = now() WHERE id = ${userData.id}`);
+
+            if (query_update.affectedRows === 0) {
+                return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+            }
+
+            return res.status(200).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Success!",
+                data : dataResponse
+            });
+        }else{
+            return res.status(400).json({ 
+                status : res.statusCode, 
+                message : "Subscription Payment Failed!"
+            });
+        }
+    }else if(parseInt(buyPremorSupp) === 2 && userData.type === 2 && dateNow < dateBuy){
+        let tipe = 0;
+        let query_update = await db.executeQuery(connection,`UPDATE users SET type = ${tipe} WHERE id = ${userData.id}`);
+
+        if (query_update.affectedRows === 0) {
+            return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
+        }
+
+        return res.status(400).json({ 
+            status : res.statusCode, 
+            message : "Subscription Expired!"
+        });
     }
 
     await db.release(connection);

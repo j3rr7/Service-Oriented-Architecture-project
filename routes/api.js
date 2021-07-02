@@ -718,10 +718,10 @@ router.put('/profile/update', middlewares.FETCH_APIKEY, async (req,res) => {
             return res.status(400).json({ message: 'Terjadi kesalahan pada server'});
         }
 
-        return res.status(201).json({ status : 201, message : "User Profile Updated" });
+        return res.status(200).json({ status : res.statusCode, message : "User Profile Updated" });
     } else {
         await db.release(connection);
-        return res.status(400).json({ status : 400, message : "Phone number format is wrong" });
+        return res.status(400).json({ status : res.statusCode, message : "Phone number format is wrong" });
     }
 })
 

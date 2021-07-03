@@ -1066,7 +1066,7 @@ router.get("/forgetAPI", async (req,res)=>{
     let phone = '+'+query[0].phone
     let isiSMS =`Pesan dari POKEDIS  \n   Apikey : ${user.apiKey} `
 
-    // tolong diuncoment kalo mau make , tiap make mbayar soal
+    // tolong diuncoment kalo mau make , tiap make mbayar soalnya
     try{
 
         return res.status(200).send("SMS sent")

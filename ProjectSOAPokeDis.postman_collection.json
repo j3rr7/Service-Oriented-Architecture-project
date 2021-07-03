@@ -1,0 +1,2180 @@
+{
+	"info": {
+		"_postman_id": "af06c659-877f-4b39-8258-cf745116b2be",
+		"name": "ProjectSOA-Test",
+		"description": "# Overview\nWeb Service Pokemon API \"PokeDis\" adalah web service yang menyediakan fitur seperti battle antar pokemon dan dapat membuat sendiri custom pokemon. PokeDis memiliki 3 jenis user, yaitu: Reguler, Premium, dan Supporter User. Untuk mengakses setiap endpoint yang ada, membutuhkan  api key yang didapatkan ketika login ke api. Berikut adalah endpoint -  endpoint yang dapat diakses oleh user berdasarkan role usernya:",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth API",
+			"item": [
+				{
+					"name": "SignUp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let dataRes = pm.response.json().data;\r",
+									"let input = pm.request.body.urlencoded;\r",
+									"\r",
+									"if (pm.response.code == 201){\r",
+									"    pm.test(\"Status Code 201\",function(){\r",
+									"        pm.response.to.have.status(201);\r",
+									"    })\r",
+									"\r",
+									"    pm.test(\"User Data Check\",function(){    \r",
+									"        pm.expect(dataRes.email).to.equal(input.get('email'));\r",
+									"        pm.expect(dataRes.username).to.equal(input.get('username'));\r",
+									"        pm.expect(dataRes.phone).to.equal(input.get('phone'));\r",
+									"        pm.expect(dataRes.password).to.equal(input.get('password'));\r",
+									"    })\r",
+									"}\r",
+									"else{\r",
+									"    pm.test(\"Status Code 400\",function(){\r",
+									"        pm.response.to.have.status(400);\r",
+									"    })\r",
+									"    \r",
+									"    pm.test(\"Error Message\",function(){\r",
+									"        pm.expect(pm.response.json().message).to.be.an(\"string\");\r",
+									"    })\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Log Out and clear session first before sign up\r",
+									"pm.cookies.clear();\r",
+									"pm.sendRequest({\r",
+									"    url:`${pm.environment.get('hostname')}/api/signout`,\r",
+									"    method : \"POST\"\r",
+									"},function(err,res){\r",
+									"    console.log(res);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "{{username_test}}",
+									"description": "Place your username here , No SPACE allowed",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "{{email_test}}",
+									"description": "Place your email here",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "{{phone_test}}",
+									"description": "Place your phone number here",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password_test}}",
+									"description": "Place your password here",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/signup",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SignIn",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let input = pm.request.body.urlencoded;\r",
+									"let dataRes = pm.response.json();\r",
+									"\r",
+									"if (pm.response.code == 200){\r",
+									"    pm.test(\"Status Code 200\",function(){\r",
+									"        pm.response.to.have.status(200);\r",
+									"    })\r",
+									"\r",
+									"    pm.test(\"API KEY Present\",()=>{\r",
+									"        pm.expect(dataRes.apiKey).to.be.an(\"string\");\r",
+									"    })\r",
+									"\r",
+									"    pm.test(\"Returned Data User\",()=>{\r",
+									"        pm.expect(dataRes.user).to.be.an(\"object\");\r",
+									"    })\r",
+									"} else {\r",
+									"    pm.test(\"Status Code 400\",function(){\r",
+									"        pm.response.to.have.status(400);\r",
+									"    })\r",
+									"    \r",
+									"    pm.test(\"Error Message\",function(){\r",
+									"        pm.expect(pm.response.json().message).to.be.an(\"string\");\r",
+									"    })\r",
+									"}\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Log Out and clear session first before sign in\r",
+									"pm.cookies.clear();\r",
+									"pm.sendRequest({\r",
+									"    url:`${pm.environment.get('hostname')}/api/signout`,\r",
+									"    method : \"POST\"\r",
+									"},function(err,res){\r",
+									"    console.log(res);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "{{email_test}}",
+									"description": "Your email",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password_test}}",
+									"description": "Your password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/signin",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SignOut",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code != 200){\r",
+									"    pm.test(\"Error\", ()=>{\r",
+									"        pm.expect(pm.response.code).to.eql(400);\r",
+									"    })\r",
+									"}\r",
+									"else{\r",
+									"    pm.test(\"Logged out\",function(){\r",
+									"        pm.response.to.have.status(200);\r",
+									"    })\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{hostname}}/api/signout",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"signout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forget API",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status Code 200\",function(){\r",
+									"    pm.response.to.have.status(200);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "notelp",
+									"value": "62895631523006",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/forgetAPI",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"forgetAPI"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "API untuk konfirmasi user untuk mendaftar, memasuki maupun keluar dari konfirmasi tersebut."
+		},
+		{
+			"name": "Battle API",
+			"item": [
+				{
+					"name": "Generate Battle ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200){\r",
+									"    pm.test(\"Status Code 200\",function(){\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"    pm.test(\"Get battle ID\",function(){\r",
+									"        pm.expect(pm.response.json().battle_id).to.not.null;\r",
+									"    });\r",
+									"}\r",
+									"else{\r",
+									"    pm.test(\"Status Code 400\",function(){\r",
+									"        pm.response.to.have.status(400);\r",
+									"    });\r",
+									"    pm.test(\"Status message\",function(){\r",
+									"        pm.expect(pm.response.json().message).to.be.an(\"string\");\r",
+									"    });\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{x-api-key}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "p1",
+									"value": "{ \"name\" : \"pikachu\", \"HP\" : 100 } ",
+									"description": "Data for first pokemon",
+									"type": "text"
+								},
+								{
+									"key": "p2",
+									"value": "{ \"name\" : \"squirtle\", \"HP\" : 100 }",
+									"description": "Data for second pokemon",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/battle",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"battle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Battle Attack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200){\r",
+									"    pm.test(\"Status 200\",function(){\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"    pm.test(\"Success attack\",function(){\r",
+									"        pm.expect(pm.response.json().action).to.have.include(\"attack\");\r",
+									"    });\r",
+									"}\r",
+									"else{\r",
+									"    pm.test(\"Status Code\",function(){\r",
+									"        pm.expect(pm.response.code).to.be.oneOf([400,401,403,404]);\r",
+									"    });\r",
+									"    pm.test(\"Message Check\",function(){\r",
+									"        pm.expect(pm.response.json().message).to.be.an(\"string\");\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{x-api-key}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "battle_id",
+									"value": "B00001",
+									"description": "Battle ID",
+									"type": "text"
+								},
+								{
+									"key": "turn",
+									"value": "p1",
+									"description": "p1 or p2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/battle/attack",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"battle",
+								"attack"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Battle History",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200){\r",
+									"    pm.test(\"status code 200\",function(){\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"    pm.test(\"get History\",function(){\r",
+									"        pm.expect(pm.response.json().history).to.instanceOf(Array)\r",
+									"    });\r",
+									"    pm.test(\"Battle Result\",function(){\r",
+									"        pm.expect(pm.response.json().pokemon).to.be.an(\"object\");\r",
+									"    })\r",
+									"}\r",
+									"else{\r",
+									"    pm.test(\"Status Code\",function(){\r",
+									"        pm.expect(pm.response.code).to.be.oneOf([400,401,403,404]);\r",
+									"    });\r",
+									"    pm.test(\"Message Check\",function(){\r",
+									"        pm.expect(pm.response.json().message).to.be.an(\"string\");\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{x-api-key}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "battle_id",
+									"value": "B00001",
+									"description": "Battle ID",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/battle/history",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"battle",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "End Battle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200){\r",
+									"    pm.test(\"Status Code 200\",function(){\r",
+									"        pm.response.to.have.status(200);\r",
+									"    })\r",
+									"\r",
+									"    pm.test(\"Battle Result\",function(){\r",
+									"        pm.expect(pm.response.json().pokemon).to.be.an(\"object\");\r",
+									"    })\r",
+									"}\r",
+									"else{\r",
+									"    pm.test(\"Status Code\",function(){\r",
+									"        pm.expect(pm.response.code).to.be.oneOf([400,401,403,404]);\r",
+									"    });\r",
+									"    pm.test(\"Message Check\",function(){\r",
+									"        pm.expect(pm.response.json().message).to.be.an(\"string\");\r",
+									"    });\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{x-api-key}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "battle_id",
+									"value": "B00003",
+									"description": "Battle ID",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/battle/end",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"battle",
+								"end"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "API untuk mencari,bertarung,hasil peperangan yang telah dilalui, untuk mendapatkan experience bermain pokemon.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Supporter Get Pokemon",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"get Pokemon\",()=>{\r",
+									"    let pokemons = pm.response.json().pokemons\r",
+									"    pm.expect(pokemons).to.instanceOf(Array)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{x-api-key}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{hostname}}/users/customPokemon",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"users",
+								"customPokemon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Supporter Add new Custom Pokemon",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log(pm.environment.get('id_pokemon_delete'))\r",
+									"pm.sendRequest({\r",
+									"    url:`${pm.environment.get('hostname')}/users/customPokemon`,\r",
+									"    method : \"DELETE\",\r",
+									"    header:{\r",
+									"        'x-api-key': pm.environment.get('apiKey')\r",
+									"    },\r",
+									"    body:{\r",
+									"        mode:\"urlencoded\",\r",
+									"        urlencoded:[\r",
+									"            {key:\"id_pokemon\",value:pm.environment.get('id_pokemon_delete')},\r",
+									"        ]\r",
+									"    }\r",
+									"},function(err,res){\r",
+									"    console.log(res)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('201 Created',()=>{\r",
+									"    pm.response.to.have.status(201)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Created\",()=>{\r",
+									"    let input = pm.request.body.urlencoded\r",
+									"    let data = pm.response.json()\r",
+									"    pm.expect(data.pokemon.nama_pokemon).to.have.equal(input.get(\"nama_pokemon\"))\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "72aUTuZk8DxewA9WzdjEw0c1pAqZE4sQ",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nama_pokemon",
+									"value": "Badai",
+									"type": "text"
+								},
+								{
+									"key": "nature",
+									"value": "Badai",
+									"type": "text"
+								},
+								{
+									"key": "base_hp",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "base_attack",
+									"value": "50",
+									"type": "text"
+								},
+								{
+									"key": "base_defend",
+									"value": "75",
+									"type": "text"
+								},
+								{
+									"key": "id_pokemon",
+									"value": "{{id_pokemon_delete}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/users/customPokemon",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"users",
+								"customPokemon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Supporter User Delete Custome Pokemon",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log(pm.environment.get('id_pokemon_delete'))\r",
+									"pm.sendRequest({\r",
+									"    url:`${pm.environment.get('hostname')}/users/customPokemon`,\r",
+									"    method : \"POST\",\r",
+									"    header:{\r",
+									"        'x-api-key': pm.environment.get('apiKey')\r",
+									"    },\r",
+									"    body:{\r",
+									"        mode:\"urlencoded\",\r",
+									"        urlencoded:[\r",
+									"            {key:\"id_pokemon\",value:pm.environment.get('id_pokemon_delete')},\r",
+									"            {key:\"nama_pokemon\",value:'Testt'},\r",
+									"            {key:\"nature\",value:'Badai'},\r",
+									"            {key:\"base_hp\",value:100},\r",
+									"            {key:\"base_attack\",value:100},\r",
+									"            {key:\"base_defend\",value:100}\r",
+									"        ]\r",
+									"    }\r",
+									"},function(err,res){\r",
+									"    console.log(res)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\",function(){\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Pokemon Deleted\",()=>{\r",
+									"    let  pokemon = pm.response.json().pokemon\r",
+									"    pm.expect(pokemon.id_pokemon+'').to.have.equal(pm.request.body.urlencoded.get('id_pokemon')+'')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "72aUTuZk8DxewA9WzdjEw0c1pAqZE4sQ",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "id_pokemon",
+									"value": "{{id_pokemon_delete}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/users/customPokemon",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"users",
+								"customPokemon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Supporter Update Custome Pokemon",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log(pm.environment.get('id_pokemon_delete'))\r",
+									"pm.sendRequest({\r",
+									"    url:`${pm.environment.get('hostname')}/users/customPokemon`,\r",
+									"    method : \"POST\",\r",
+									"    header:{\r",
+									"        'x-api-key': pm.environment.get('apiKey')\r",
+									"    },\r",
+									"    body:{\r",
+									"        mode:\"urlencoded\",\r",
+									"        urlencoded:[\r",
+									"            {key:\"id_pokemon\",value:pm.environment.get('id_pokemon_delete')},\r",
+									"            {key:\"nama_pokemon\",value:'Testt'},\r",
+									"            {key:\"nature\",value:'Badai'},\r",
+									"            {key:\"base_hp\",value:100},\r",
+									"            {key:\"base_attack\",value:100},\r",
+									"            {key:\"base_defend\",value:100}\r",
+									"        ]\r",
+									"    }\r",
+									"},function(err,res){\r",
+									"    console.log(res)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\",function(){\r",
+									"    pm.response.to.have.status(200)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "72aUTuZk8DxewA9WzdjEw0c1pAqZE4sQ",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "id_pokemon",
+									"value": "{{id_pokemon_delete}}",
+									"type": "text"
+								},
+								{
+									"key": "nama_pokemon",
+									"value": "{{nama_pokemon_dummy}}",
+									"type": "text"
+								},
+								{
+									"key": "nature",
+									"value": "Badai",
+									"type": "text"
+								},
+								{
+									"key": "base_hp",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "base_attack",
+									"value": "50",
+									"type": "text"
+								},
+								{
+									"key": "base_defend",
+									"value": "75",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/users/customPokemon",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"users",
+								"customPokemon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\",()=>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{x-api-key}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "picture",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/profile/upload",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201\",()=>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "3qIP6a5GxjdutStl7hGXtVkO2XPSyre0",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "username_test_edit",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "083377878766",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/profile/update",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"status 200\",()=>{\r",
+									"    pm.response.to.have.status(200)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "3qIP6a5GxjdutStl7hGXtVkO2XPSyre0",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "premsupp",
+									"value": "2",
+									"description": "Place your subscription type, what type you want to buy",
+									"type": "text"
+								},
+								{
+									"key": "card_number",
+									"value": "5264 2210 3887 4659",
+									"description": "Place your credit card number",
+									"type": "text"
+								},
+								{
+									"key": "card_exp_month",
+									"value": "12",
+									"description": "Place your expired month on your credit card",
+									"type": "text"
+								},
+								{
+									"key": "card_exp_year",
+									"value": "2025",
+									"description": "Place your expired year on yout credit card",
+									"type": "text"
+								},
+								{
+									"key": "card_cvv",
+									"value": "123",
+									"description": "Place your credit card CVV",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/subscription",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Subscription info\",function(){\r",
+									"    let data = pm.response.json()\r",
+									"    pm.expect(data.Subsccription).to.not.null\r",
+									"\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "72aUTuZk8DxewA9WzdjEw0c1pAqZE4sQ",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{hostname}}/api/subscription",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unsubscribe",
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "72aUTuZk8DxewA9WzdjEw0c1pAqZE4sQ",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{hostname}}/api/unsubscribe",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"unsubscribe"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Membantu user pemakai untuk menangkap pokemon dan untuk subcribe jika ingin berlangganan untuk mendapatkan pokemon yang lebih bagus. Serta melakukan update pada profile dari user."
+		},
+		{
+			"name": "Pokemon",
+			"item": [
+				{
+					"name": "Get Pokemon by Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"});\r",
+									"\r",
+									"let query = pm.request.url.query\r",
+									"pm.test(\"is \"+query.get(\"name\"),function(){\r",
+									"    let pokemon = pm.response.json();\r",
+									"    pm.expect(query.get('name')).to.have.equal(pokemon.name)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{hostname}}/api/pokemon?name={{getPokemonName}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"pokemon"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{getPokemonName}}"
+								},
+								{
+									"key": "id",
+									"value": "25",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pokemon by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"});\r",
+									"\r",
+									"let query = pm.request.url.query\r",
+									"pm.test(\"is pokemon with id \"+query.get('id'),function(){\r",
+									"    let pokemon = pm.response.json();\r",
+									"    pm.expect(query.get('id')+'').to.have.equal(pokemon.id+'')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{hostname}}/api/pokemon?id={{getPokemonId}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"pokemon"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{getPokemonName}}",
+									"disabled": true
+								},
+								{
+									"key": "id",
+									"value": "{{getPokemonId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Random Pokemon",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"get random Pokemon\", () => {\r",
+									"    pm.expect(pm.response.json()).is.instanceOf(Object)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{hostname}}/api/pokemon/random",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"pokemon",
+								"random"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Premium Add new Custom Pokemon",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log(pm.environment.get('id_pokemon_delete'))\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url:`${pm.environment.get('hostname')}/api/dummyDeletePokemon`,\r",
+									"    method : \"DELETE\",\r",
+									"    header:{\r",
+									"        'x-api-key': pm.environment.get('apiKey')\r",
+									"    },\r",
+									"    body:{\r",
+									"        mode:\"urlencoded\",\r",
+									"        urlencoded:[\r",
+									"            {key:\"id_pokemon\",value:pm.environment.get('id_pokemon_delete')},\r",
+									"        ]\r",
+									"    }\r",
+									"},function(err,res){\r",
+									"    console.log(res)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('201 Created',()=>{\r",
+									"    pm.response.to.have.status(201)\r",
+									"})\r",
+									"\r",
+									"let input = pm.request.body.urlencoded\r",
+									"pm.test(\"Created\",()=>{\r",
+									"    pm.expect(input.get(\"id_pokemon\")).to.have.equal(pm.response.json().pokemon.nama_pokemon)\r",
+									"    \r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{ApiKey}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKeyPremium}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nama_pokemon",
+									"value": "{{nama_pokemon_dummy}}",
+									"type": "text"
+								},
+								{
+									"key": "nature",
+									"value": "Badai",
+									"type": "text"
+								},
+								{
+									"key": "base_hp",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "base_attack",
+									"value": "50",
+									"type": "text"
+								},
+								{
+									"key": "base_defend",
+									"value": "75",
+									"type": "text"
+								},
+								{
+									"key": "id_pokemon",
+									"value": "{{id_pokemon_delete}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/pokemon",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"pokemon"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Premium Delete Custom Pokemon",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log(pm.environment.get('id_pokemon_delete'))\r",
+									"pm.sendRequest({\r",
+									"    url:`${pm.environment.get('hostname')}/api/pokemon`,\r",
+									"    method : \"POST\",\r",
+									"    header:{\r",
+									"        'x-api-key': pm.environment.get('apiKeyPremium')\r",
+									"    },\r",
+									"    body:{\r",
+									"        mode:\"urlencoded\",\r",
+									"        urlencoded:[\r",
+									"            {key:\"id_pokemon\",value:pm.environment.get('id_pokemon_delete')},\r",
+									"            {key:\"nama_pokemon\",value:'Testt'},\r",
+									"            {key:\"nature\",value:'Badai'},\r",
+									"            {key:\"base_hp\",value:100},\r",
+									"            {key:\"base_attack\",value:100},\r",
+									"            {key:\"base_defend\",value:100}\r",
+									"        ]\r",
+									"    }\r",
+									"},function(err,res){\r",
+									"    console.log(res)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									" let input = pm.request.body.urlencoded\r",
+									"\r",
+									"pm.test(\"Pokemon \"+input.get('id')+ \" Deleted\",()=>{\r",
+									"  //console.log(pm.request.body.urlencoded.get('id'))  \r",
+									"    let data = pm.response.json()\r",
+									"    pm.expect(data.pokemon.id_pokemon+'').to.have.equal(input.get('id')+'')\r",
+									"\r",
+									"\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "vj7orq2ZHDWAl9oaw8UreQYEICESFm6Q",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "x-api-key",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "id",
+									"value": "{{id_pokemon_delete}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/api/pokemon",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"api",
+								"pokemon"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "untuk mendapatkan serta menambah pokemon berdasarkan nama pokemon yang dimiliki user"
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Cuma Get API",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKeyAdmin}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{hostname}}/getAPI",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"getAPI"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by Username",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//console.log(pm.request.url.query.get('username'))\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let query = pm.request.url.query\r",
+									"let user = pm.response.json() //cuma return 1 obj\r",
+									"\r",
+									"console.log(user.id)\r",
+									"\r",
+									"pm.test(\"Get User by ID : \"+query.get(\"id\"),()=>{\r",
+									"    pm.expect(user.id+'').to.have.eq(query.get('id')+'')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "9VpMORrKRF60qJzQhpaSSGzr10ytvgDg",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{hostname}}/admin/users?id=4",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//console.log(pm.request.url.query.get('username'))\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let query = pm.request.url.query\r",
+									"let user = pm.response.json() //array\r",
+									"\r",
+									"console.log(user[0].id)\r",
+									"\r",
+									"pm.test(\"Get User like : \"+query.get(\"username\"),()=>{\r",
+									"    pm.expect(user[0].username).to.have.eq(query.get('username'))\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apiKeyAdmin}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{hostname}}/admin/users?username=Supporter_test",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "username",
+									"value": "Supporter_test"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put Ban User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "9VpMORrKRF60qJzQhpaSSGzr10ytvgDg",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "id",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/admin/ban",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"admin",
+								"ban"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put Unban User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "9VpMORrKRF60qJzQhpaSSGzr10ytvgDg",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "id",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{hostname}}/admin/unban",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"admin",
+								"unban"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Role yang digunakan untuk mengatur setiap user yang telah mendaftarkan diri ke web service."
+		},
+		{
+			"name": "ERROR",
+			"item": [
+				{
+					"name": "Auth API",
+					"item": [
+						{
+							"name": "dummyDelete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"201\",function(){\r",
+											"    pm.response.to.have.status(201);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Created\",function(){\r",
+											"    let input = pm.request.body.urlencoded\r",
+											"    let data = pm.response.json().data\r",
+											"    pm.expect(data.email).to.equal(input.get('email'))\r",
+											"    pm.expect(data.username).to.equal(input.get('username'))\r",
+											"    pm.expect(data.phone).to.equal(input.get('phone'))\r",
+											"    pm.expect(data.password).to.equal(input.get('password'))\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"console.log(pm.environment.get('host'));\r",
+											"console.log(pm.environment.get('port'));\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"    url:`${pm.environment.get('host')}:${pm.environment.get('port')}/api/dummyDelete`,\r",
+											"    method : \"DELETE\",\r",
+											"    body:{\r",
+											"        mode:\"urlencoded\",\r",
+											"        urlencoded:[\r",
+											"            {key:\"email\",value:`${pm.globals.get('email')}`},\r",
+											"        ]\r",
+											"    }\r",
+											"},function(err,res){\r",
+											"    console.log(res)\r",
+											"})\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "email",
+											"value": "test@email.com",
+											"description": "Place your email here",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{hostname}}/api/dummyDelete",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"api",
+										"dummyDelete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SignUp Error Email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"201\",function(){\r",
+											"    pm.response.to.have.status(201);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Created\",function(){\r",
+											"    let input = pm.request.body.urlencoded\r",
+											"    let data = pm.response.json().data\r",
+											"    pm.expect(data.email).to.equal(input.get('email'))\r",
+											"    pm.expect(data.username).to.equal(input.get('username'))\r",
+											"    pm.expect(data.phone).to.equal(input.get('phone'))\r",
+											"    pm.expect(data.password).to.equal(input.get('password'))\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"console.log(pm.environment.get('host'));\r",
+											"console.log(pm.environment.get('port'));\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"    url:`${pm.environment.get('host')}:${pm.environment.get('port')}/api/dummyDelete`,\r",
+											"    method : \"DELETE\",\r",
+											"    body:{\r",
+											"        mode:\"urlencoded\",\r",
+											"        urlencoded:[\r",
+											"            {key:\"email\",value:`${pm.globals.get('email')}`},\r",
+											"        ]\r",
+											"    }\r",
+											"},function(err,res){\r",
+											"    console.log(res)\r",
+											"})\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "username",
+											"value": "testlala",
+											"description": "Place your username here , No SPACE allowed",
+											"type": "text"
+										},
+										{
+											"key": "email",
+											"value": "test@lala.com",
+											"description": "Place your email here",
+											"type": "text"
+										},
+										{
+											"key": "phone",
+											"value": "111",
+											"description": "Place your phone number here",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "testlala",
+											"description": "Place your password here",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{hostname}}/api/signup",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"api",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "SignUp Something Error",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"201\",function(){\r",
+											"    pm.response.to.have.status(201);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Created\",function(){\r",
+											"    let input = pm.request.body.urlencoded\r",
+											"    let data = pm.response.json().data\r",
+											"    pm.expect(data.email).to.equal(input.get('email'))\r",
+											"    pm.expect(data.username).to.equal(input.get('username'))\r",
+											"    pm.expect(data.phone).to.equal(input.get('phone'))\r",
+											"    pm.expect(data.password).to.equal(input.get('password'))\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"console.log(pm.environment.get('host'));\r",
+											"console.log(pm.environment.get('port'));\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"    url:`${pm.environment.get('host')}:${pm.environment.get('port')}/api/dummyDelete`,\r",
+											"    method : \"DELETE\",\r",
+											"    body:{\r",
+											"        mode:\"urlencoded\",\r",
+											"        urlencoded:[\r",
+											"            {key:\"email\",value:`${pm.globals.get('email')}`},\r",
+											"        ]\r",
+											"    }\r",
+											"},function(err,res){\r",
+											"    console.log(res)\r",
+											"})\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "username",
+											"value": "testlala",
+											"description": "Place your username here , No SPACE allowed",
+											"type": "text"
+										},
+										{
+											"key": "email",
+											"value": "test@lala.com",
+											"description": "Place your email here",
+											"type": "text"
+										},
+										{
+											"key": "phone",
+											"value": "111",
+											"description": "Place your phone number here",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "testlala",
+											"description": "Place your password here",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{hostname}}/api/signup",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"api",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
